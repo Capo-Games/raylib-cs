@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk" InitialTargets="ConfigureNative">
+﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="ConfigureNative">
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -69,13 +69,13 @@
     <PropertyGroup>
         <RaylibConfigFile>$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)\src\config.h</RaylibConfigFile>
     </PropertyGroup>
-  
+      
     <ReadLinesFromFile File="$(RaylibConfigFile)">
         <Output TaskParameter="Lines" ItemName="ConfigLines" />
     </ReadLinesFromFile>
   
     <ItemGroup>
-        <UpdatedConfig Include="@(ConfigLines->Replace(`// #define SUPPORT_CUSTOM_FRAME_CONTROL    1`, `#define SUPPORT_CUSTOM_FRAME_CONTROL    1`))" />
+        <UpdatedConfig Include="@(ConfigLines->Replace(`//#define SUPPORT_CUSTOM_FRAME_CONTROL    1`, `#define SUPPORT_CUSTOM_FRAME_CONTROL    1`))" />
     </ItemGroup>
   
     <WriteLinesToFile

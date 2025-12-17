@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Title>Raylib-cs</Title>
+    <Title>Raylib-cs-custom</Title>
     <Description>C# bindings for raylib - A simple and easy-to-use library to learn videogames programming</Description>
     <RepositoryUrl>https://github.com/raylib-cs/raylib-cs/</RepositoryUrl>
     <Authors>raylib-cs</Authors>

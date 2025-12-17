@@ -134,7 +134,7 @@
        Condition="'$(BuildPlatform)' == 'Android'" />
 
     <PropertyGroup Condition="'$(BuildPlatform)' == 'Android'">
-        <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)\src\config.h</RaylibCMakeListsFile>
+        <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)\src\CMakeLists.txt</RaylibCMakeListsFile>
     </PropertyGroup>
 
     <ReadLinesFromFile Condition="'$(BuildPlatform)' == 'Android'" File="$(RaylibCMakeListsFile)">

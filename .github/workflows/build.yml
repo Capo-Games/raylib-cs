@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
   
 env:
-  ANDROID_NDK_VERSION: r27d
+  ANDROID_NDK_VERSION: r29
 jobs:
   build:
     runs-on: ubuntu-22.04

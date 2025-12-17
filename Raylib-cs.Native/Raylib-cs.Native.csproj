@@ -66,23 +66,6 @@
 
     <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip" DestinationFolder="$(BaseIntermediateOutputPath)" OverwriteReadOnlyFiles="true" Condition="!Exists('$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)')" />
 
-    <PropertyGroup>
-        <RaylibConfigFile>$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)\src\config.h</RaylibConfigFile>
-    </PropertyGroup>
-      
-    <ReadLinesFromFile File="$(RaylibConfigFile)">
-        <Output TaskParameter="Lines" ItemName="ConfigLines" />
-    </ReadLinesFromFile>
-  
-    <ItemGroup>
-        <UpdatedConfig Include="@(ConfigLines->Replace(`//#define SUPPORT_CUSTOM_FRAME_CONTROL    1`, `#define SUPPORT_CUSTOM_FRAME_CONTROL    1`))" />
-    </ItemGroup>
-  
-    <WriteLinesToFile
-      File="$(RaylibConfigFile)"
-      Lines="@(UpdatedConfig)"
-      Overwrite="true" />
-
     <Exec Command="cmake @(CMakeArgs, ' ') $(CMakeExtraArgs)" />
     <Exec Command="cmake --build $(OutputPath)native --config $(Configuration)" />
   </Target>

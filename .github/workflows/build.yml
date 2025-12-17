@@ -218,6 +218,26 @@ jobs:
           name: win-x64
           path: Raylib-cs/runtimes/win-x64/native
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-arm
+          path: Raylib-cs/runtimes/android-arm/native
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-arm64
+          path: Raylib-cs/runtimes/android-arm64/native
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-x86
+          path: Raylib-cs/runtimes/android-x86/native
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-x64
+          path: Raylib-cs/runtimes/android-x64/native
+
       - name: setup dotnet
         uses: actions/setup-dotnet@v4
         with:
@@ -226,7 +246,7 @@ jobs:
             8.0.x
 
       - name: create NuGet Package
-        run: dotnet pack Raylib-cs -c Release --output nuget
+        run: dotnet pack Raylib-cs-custom -c Release --output nuget
 
       - name: upload NuGet Package As Artifact
         uses: actions/upload-artifact@v4

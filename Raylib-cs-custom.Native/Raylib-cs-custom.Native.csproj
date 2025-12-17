@@ -7,7 +7,7 @@
     <GenerateDependencyFile>False</GenerateDependencyFile>
   </PropertyGroup>
 
-  <Import Project="../Raylib-cs/Build.props" />
+  <Import Project="../Raylib-cs-custom/Build.props" />
   
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
     <NativeExt>so</NativeExt>

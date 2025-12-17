@@ -8,6 +8,9 @@ on:
       - "README.md"
       - ".github/ISSUE_TEMPLATE/**"
   workflow_dispatch:
+  
+env:
+  ANDROID_NDK_VERSION: r26d
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -133,6 +136,51 @@ jobs:
         with:
           name: win-${{ matrix.name }}
           path: Raylib-cs.Native/bin/Release/native/raylib/Release/raylib.dll
+          if-no-files-found: error
+          
+  build-android:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        name: [arm, arm64, x86, x64]
+        include:
+          - name: arm
+            arch: arm
+          - name: arm64
+            arch: arm64
+          - name: x86
+            arch: x86
+          - name: x64
+            arch: x64
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
+      - name: setup Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: ${{ env.ANDROID_NDK_VERSION }}
+          link-to-sdk: true
+
+      - name: build raylib for android
+        run: dotnet build Raylib-cs.Native -c Release /p:BuildPlatform=Android /p:BuildArch=${{ matrix.arch }}
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+      - name: upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ matrix.name }}
+          path: Raylib-cs.Native/bin/Release/native/raylib/libraylib.so
           if-no-files-found: error
 
   build-publish:

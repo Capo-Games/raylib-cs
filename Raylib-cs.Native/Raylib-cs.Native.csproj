@@ -29,6 +29,35 @@
     <NativeArch Condition="$(BuildArch) != ''">$(BuildArch)</NativeArch>
   </PropertyGroup>
 
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android'">
+        <NativeExt>so</NativeExt>
+        <NativePre>lib</NativePre>
+        <NativeOutputPath>$(OutputPath)native/raylib/</NativeOutputPath>
+        <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK)</AndroidNdk>
+        <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK_HOME)</AndroidNdk>
+        <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK_ROOT)</AndroidNdk>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'arm'">
+        <NativeArch>armeabi-v7a</NativeArch>
+        <NativeRid>android-arm</NativeRid>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'arm64'">
+        <NativeArch>arm64-v8a</NativeArch>
+        <NativeRid>android-arm64</NativeRid>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'x86'">
+        <NativeArch>x86</NativeArch>
+        <NativeRid>android-x86</NativeRid>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'x64'">
+        <NativeArch>x86_64</NativeArch>
+        <NativeRid>android-x64</NativeRid>
+    </PropertyGroup>
+
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) AND $(NativeArch) == 'arm64'">
     <CMakeArgs Include="-D CMAKE_OSX_ARCHITECTURES=arm64" />
   </ItemGroup>
@@ -44,6 +73,13 @@
   <ItemGroup Condition="$([MSBuild]::IsOsPlatform('Windows')) AND $(NativeArch) == 'x64'">
     <CMakeArgs Include="-A x64" />
   </ItemGroup>
+
+<ItemGroup Condition="'$(BuildPlatform)' == 'Android'">
+    <CMakeArgs Include="-D CMAKE_TOOLCHAIN_FILE=$(AndroidNdk)/build/cmake/android.toolchain.cmake" />
+    <CMakeArgs Include="-D PLATFORM=Android" />
+    <CMakeArgs Include="-D ANDROID_ABI=$(NativeArch)" />
+    <CMakeArgs Include="-D ANDROID_PLATFORM=21" />
+</ItemGroup>
 
   <ItemGroup>
     <Content Include="$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Condition="Exists('$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)')" />

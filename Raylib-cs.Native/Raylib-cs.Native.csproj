@@ -57,33 +57,7 @@
         <NativeRid>android-x64</NativeRid>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android'">
-        <AndroidMainCContent>
-            <![CDATA[
-                #if defined (PLATFORM_ANDROID)
-                    #include <stdlib.h>
-                
-                    typedef void (*rlAndroidMainCallback)();
-                    static rlAndroidMainCallback androidCallback = NULL;
-                
-                    void rlSetAndroidMain(rlAndroidMainCallback callback) {
-                        androidCallback = callback;
-                    }
-                
-                    int main(int argc, char *argv[]) {
-                        (void)argc;
-                        (void)argv;
-                        while (androidCallback == NULL) {
-                        }
-                        androidCallback();
-                    }
-                #endif
-                
-            ]]>
-        </AndroidMainCContent>
-    </PropertyGroup>
-
-    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) AND $(NativeArch) == 'arm64'">
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) AND $(NativeArch) == 'arm64'">
     <CMakeArgs Include="-D CMAKE_OSX_ARCHITECTURES=arm64" />
   </ItemGroup>
 
@@ -127,11 +101,10 @@
 
     <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip" DestinationFolder="$(BaseIntermediateOutputPath)" OverwriteReadOnlyFiles="true" Condition="!Exists('$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)')" />
 
-    <WriteLinesToFile
-       File="$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)/src/android_main.c"
-       Lines="$(AndroidMainCContent)"
-       Overwrite="true"
-       Condition="'$(BuildPlatform)' == 'Android'" />
+    <Copy
+        SourceFiles="$(MSBuildProjectDirectory)/android_main.c"
+        DestinationFolder="$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)/src"
+        Condition="'$(BuildPlatform)' == 'Android'" />
 
     <PropertyGroup Condition="'$(BuildPlatform)' == 'Android'">
         <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)\src\CMakeLists.txt</RaylibCMakeListsFile>

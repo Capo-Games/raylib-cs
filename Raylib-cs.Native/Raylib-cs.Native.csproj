@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <Import Project="../Raylib-cs/Build.props" />
-
+  
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
     <NativeExt>so</NativeExt>
     <NativePre>lib</NativePre>
@@ -32,7 +32,6 @@
     <PropertyGroup Condition="'$(BuildPlatform)' == 'Android'">
         <NativeExt>so</NativeExt>
         <NativePre>lib</NativePre>
-        <NativeOutputPath>$(OutputPath)native/raylib/</NativeOutputPath>
         <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK)</AndroidNdk>
         <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK_HOME)</AndroidNdk>
         <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK_ROOT)</AndroidNdk>
@@ -58,7 +57,33 @@
         <NativeRid>android-x64</NativeRid>
     </PropertyGroup>
 
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) AND $(NativeArch) == 'arm64'">
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android'">
+        <AndroidMainCContent>
+            <![CDATA[
+                #if defined (PLATFORM_ANDROID)
+                    #include <stdlib.h>
+                
+                    typedef void (*rlAndroidMainCallback)();
+                    static rlAndroidMainCallback androidCallback = NULL;
+                
+                    void rlSetAndroidMain(rlAndroidMainCallback callback) {
+                        androidCallback = callback;
+                    }
+                
+                    int main(int argc, char *argv[]) {
+                        (void)argc;
+                        (void)argv;
+                        while (androidCallback == NULL) {
+                        }
+                        androidCallback();
+                    }
+                #endif
+                
+            ]]>
+        </AndroidMainCContent>
+    </PropertyGroup>
+
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) AND $(NativeArch) == 'arm64'">
     <CMakeArgs Include="-D CMAKE_OSX_ARCHITECTURES=arm64" />
   </ItemGroup>
 
@@ -101,6 +126,30 @@
     <DownloadFile SourceUrl="https://github.com/raysan5/raylib/archive/refs/tags/$(TargetRaylibTag).zip" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="raylib.zip" Condition="!Exists('$(BaseIntermediateOutputPath)raylib.zip')" />
 
     <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip" DestinationFolder="$(BaseIntermediateOutputPath)" OverwriteReadOnlyFiles="true" Condition="!Exists('$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)')" />
+
+    <WriteLinesToFile
+       File="$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)/src/android_main.c"
+       Lines="$(AndroidMainCContent)"
+       Overwrite="true"
+       Condition="'$(BuildPlatform)' == 'Android'" />
+
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android'">
+        <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)\src\config.h</RaylibCMakeListsFile>
+    </PropertyGroup>
+
+    <ReadLinesFromFile Condition="'$(BuildPlatform)' == 'Android'" File="$(RaylibCMakeListsFile)">
+        <Output TaskParameter="Lines" ItemName="CMakeListsFile" />
+    </ReadLinesFromFile>
+
+    <ItemGroup Condition="'$(BuildPlatform)' == 'Android'">
+        <UpdatedCMakeLists Include="@(CMakeListsFile->Replace(`set(raylib_sources`, `set(raylib_sources android_main.c`))" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+        File="$(RaylibCMakeListsFile)"
+        Lines="@(UpdatedCMakeLists)"
+        Overwrite="true" 
+        Condition="'$(BuildPlatform)' == 'Android'" />
 
     <Exec Command="cmake @(CMakeArgs, ' ') $(CMakeExtraArgs)" />
     <Exec Command="cmake --build $(OutputPath)native --config $(Configuration)" />

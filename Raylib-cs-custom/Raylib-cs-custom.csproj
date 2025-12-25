@@ -51,4 +51,8 @@
     <Compile Include="types\*.cs" />
     <Compile Include="types\native\*.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Raylib-cs-custom.Native\Raylib-cs-custom.Native.csproj" />
+  </ItemGroup>
 </Project>

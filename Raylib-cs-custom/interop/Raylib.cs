@@ -2667,9 +2667,17 @@ public static unsafe partial class Raylib
 
     // Audio device management functions
 
-    /// <summary>Initialize audio device and context</summary>
+    /// <summary>Initialize audio context</summary>
     [DllImport(NativeLibName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void InitAudioDevice();
+    public static extern void InitAudioContext();
+
+    /// <summary>Initialize audio device</summary>
+    [DllImport(NativeLibName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void QueryAudioDevices(delegate* unmanaged<int, sbyte*, bool, void> callback);
+
+    /// <summary>Initialize audio device</summary>
+    [DllImport(NativeLibName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void InitAudioDevice(sbyte* deviceName);
 
     /// <summary>Close the audio device and context</summary>
     [DllImport(NativeLibName, CallingConvention = CallingConvention.Cdecl)]

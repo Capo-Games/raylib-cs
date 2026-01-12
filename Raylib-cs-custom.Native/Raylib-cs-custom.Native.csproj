@@ -67,7 +67,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) AND $(NativeArch) == 'x86_64'">
-    <CMakeArgs Include="-DCUSTOMIZE_BUILD=ON -DOPENGL_VERSION=&quot;ES 2.0&quot; -D CMAKE_OSX_ARCHITECTURES=x86_64" />
+    <CMakeArgs Include="-DCUSTOMIZE_BUILD=ON -DOPENGL_VERSION=&quot;ES 2.0&quot; -D CMAKE_OSX_ARCHITECTURES=x86_64" />  
   </ItemGroup>
 
   <ItemGroup Condition="$([MSBuild]::IsOsPlatform('Windows')) AND $(NativeArch) == 'win32'">
@@ -102,7 +102,7 @@
   </ItemGroup>
 
   <Target Name="ConfigureNative" Condition="$(SkipLocalBuild) != true">
-    <DownloadFile SourceUrl="https://github.com/raysan5/raylib/archive/refs/tags/$(TargetRaylibTag).zip" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="raylib.zip" Condition="!Exists('$(BaseIntermediateOutputPath)raylib.zip')" />
+    <DownloadFile SourceUrl="https://github.com/xxCherry/raylib-rhyt/archive/refs/tags/$(TargetRaylibTag).zip" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="raylib.zip" Condition="!Exists('$(BaseIntermediateOutputPath)raylib.zip')" />
 
     <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip" DestinationFolder="$(BaseIntermediateOutputPath)" OverwriteReadOnlyFiles="true" Condition="!Exists('$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)')" />
 

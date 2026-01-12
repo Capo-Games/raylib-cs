@@ -1,11 +1,16 @@
 using System.Runtime.InteropServices;
 using System.Numerics;
 using System;
+using System.Collections.Generic;
 
 namespace Raylib_cs;
 
+public record DeviceInfo(int Index, string DeviceName, bool IsDefault);
+
 public static unsafe partial class Raylib
 {
+    private static List<DeviceInfo> deviceInfos = [];
+
     /// <summary>Initialize window and OpenGL context</summary>
     public static void InitWindow(int width, int height, string title)
     {
@@ -18,6 +23,37 @@ public static unsafe partial class Raylib
     {
         using Utf8Buffer str1 = title.ToUtf8Buffer();
         SetWindowTitle(str1.AsPointer());
+    }
+
+    /// <summary>Set title for window (only PLATFORM_DESKTOP)</summary>
+    public static void InitAudioDevice(string deviceName = "")
+    {
+        if (string.IsNullOrEmpty(deviceName))
+        {
+            InitAudioDevice((sbyte*)0);
+            return;
+        }
+
+        using Utf8Buffer str1 = deviceName.ToUtf8Buffer();
+        InitAudioDevice(str1.AsPointer());
+    }
+
+    public static List<DeviceInfo> QueryDevices()
+    {
+        var result = new List<DeviceInfo>();
+
+        [UnmanagedCallersOnly]
+        static void queryDevices(int index, sbyte* deviceName, bool isDefault)
+        {
+            deviceInfos.Add(new DeviceInfo(index, Utf8StringUtils.GetUTF8String(deviceName), isDefault));
+        }
+
+        result.AddRange(deviceInfos);
+        deviceInfos.Clear();
+
+        QueryAudioDevices(&queryDevices);
+
+        return result;
     }
 
     /// <summary>Get the human-readable, UTF-8 encoded name of the specified monitor</summary>

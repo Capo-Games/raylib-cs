@@ -48,10 +48,10 @@ public static unsafe partial class Raylib
             deviceInfos.Add(new DeviceInfo(index, Utf8StringUtils.GetUTF8String(deviceName), isDefault == 1));
         }
 
+        QueryAudioDevices(&queryDevices);
+
         result.AddRange(deviceInfos);
         deviceInfos.Clear();
-
-        QueryAudioDevices(&queryDevices);
 
         return result;
     }

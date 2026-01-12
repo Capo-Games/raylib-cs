@@ -2672,7 +2672,7 @@ public static unsafe partial class Raylib
     public static extern void InitAudioContext();
 
     [DllImport(NativeLibName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern void QueryAudioDevices(delegate* unmanaged<int, sbyte*, bool, void> callback);
+    public static extern void QueryAudioDevices(delegate* unmanaged<int, sbyte*, sbyte, void> callback);
 
     /// <summary>Initialize audio device</summary>
     [DllImport(NativeLibName, CallingConvention = CallingConvention.Cdecl)]

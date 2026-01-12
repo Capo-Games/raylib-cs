@@ -38,14 +38,14 @@ public static unsafe partial class Raylib
         InitAudioDevice(str1.AsPointer());
     }
 
-    public static List<DeviceInfo> QueryDevices()
+    public static List<DeviceInfo> QueryAudioDevices()
     {
         var result = new List<DeviceInfo>();
 
         [UnmanagedCallersOnly]
-        static void queryDevices(int index, sbyte* deviceName, bool isDefault)
+        static void queryDevices(int index, sbyte* deviceName, sbyte isDefault)
         {
-            deviceInfos.Add(new DeviceInfo(index, Utf8StringUtils.GetUTF8String(deviceName), isDefault));
+            deviceInfos.Add(new DeviceInfo(index, Utf8StringUtils.GetUTF8String(deviceName), isDefault == 1));
         }
 
         result.AddRange(deviceInfos);

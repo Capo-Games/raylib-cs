@@ -89,7 +89,7 @@
     <Content Include="$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Condition="Exists('$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)')" />
 
     <CMakeArgs Include="-B $(OutputPath)native" />
-    <CMakeArgs Include="-S $(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)" />
+    <CMakeArgs Include="-S $(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)" />
     <CMakeArgs Include="-D CMAKE_BUILD_TYPE=$(Configuration)" />
     <CMakeArgs Include="-D BUILD_SHARED_LIBS=ON" />
     <CMakeArgs Include="-D BUILD_SHARED_LIBS=ON" />
@@ -104,7 +104,7 @@
   <Target Name="ConfigureNative" Condition="$(SkipLocalBuild) != true">
     <DownloadFile SourceUrl="https://github.com/xxCherry/raylib-rhyt/archive/refs/tags/$(TargetRaylibTag).zip" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="raylib.zip" Condition="!Exists('$(BaseIntermediateOutputPath)raylib.zip')" />
 
-    <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip" DestinationFolder="$(BaseIntermediateOutputPath)" OverwriteReadOnlyFiles="true" Condition="!Exists('$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)')" />
+    <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip" DestinationFolder="$(BaseIntermediateOutputPath)" OverwriteReadOnlyFiles="true" Condition="!Exists('$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)')" />
 
     <Copy SourceFiles="$(MSBuildProjectDirectory)/android_main.c" DestinationFolder="$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)/src" Condition="'$(BuildPlatform)' == 'Android'" />
 
@@ -113,7 +113,7 @@
     <Exec Command="tar -xvzf $(BaseIntermediateOutputPath)angle.tar.gz -C $(BaseIntermediateOutputPath)" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
       
     <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))">
-        <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-$(TargetRaylibTag)\src\CMakeLists.txt</RaylibCMakeListsFile>
+        <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)\src\CMakeLists.txt</RaylibCMakeListsFile>
     </PropertyGroup>
 
     <ReadLinesFromFile Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))" File="$(RaylibCMakeListsFile)">

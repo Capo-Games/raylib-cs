@@ -45,15 +45,14 @@ jobs:
       - name: setup dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install \
+          sudo apt-get install -y \
             libasound2-dev \
-            libx11-dev \
-            libxrandr-dev \
-            libxi-dev \
+            libwayland-dev \
+            libxkbcommon-dev \
+            xorg-dev \
             libgl1-mesa-dev \
             libglu1-mesa-dev \
-            libxcursor-dev \
-            libxinerama-dev
+            libxcursor-dev
 
       - name: build projects
         run: dotnet build -c Release

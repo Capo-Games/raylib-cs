@@ -85,83 +85,105 @@
     <CMakeArgs Include="-D ANDROID_PLATFORM=21" />
 </ItemGroup>
 
-  <ItemGroup>
-      <!-- raylib -->
-      <Content Include="$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)"
-               Link="%(Filename)%(Extension)"
-               CopyToOutputDirectory="PreserveNewest"
-               Condition="Exists('$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)')" />
-
-      <!-- libEGL -->
-      <Content Include="$(OutputPath)native/libEGL.$(NativeExt)"
-               Link="libEGL.$(NativeExt)"
-               CopyToOutputDirectory="PreserveNewest"
-               Condition="Exists('$(OutputPath)native/libEGL.$(NativeExt)')" />
-
-      <!-- libGLESv2 -->
-      <Content Include="$(OutputPath)native/libGLESv2.$(NativeExt)"
-               Link="libGLESv2.$(NativeExt)"
-               CopyToOutputDirectory="PreserveNewest"
-               Condition="Exists('$(OutputPath)native/libGLESv2.$(NativeExt)')" />
-
-    <CMakeArgs Include="-B $(OutputPath)native" />
-    <CMakeArgs Include="-S $(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)" />
-    <CMakeArgs Include="-D CMAKE_BUILD_TYPE=$(Configuration)" />
-    <CMakeArgs Include="-D BUILD_SHARED_LIBS=ON" />
-    <CMakeArgs Include="-D BUILD_SHARED_LIBS=ON" />
-    <CMakeArgs Include="-D BUILD_EXAMPLES=OFF" />
-    <CMakeArgs Include="-D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded" />
-    <CMakeArgs Include="-D CMAKE_MINIMUM_REQUIRED_VERSION=3.15" />
-    <CMakeArgs Include="-D CMAKE_POLICY_DEFAULT_CMP0091=NEW" />
-    <!-- <CMakeArgs Include="-D GLFW_BUILD_WAYLAND=ON" /> -->
-    <!-- <CMakeArgs Include="-D GRAPHICS=GRAPHICS_API_OPENGL_43" /> -->
-  </ItemGroup>
-
-  <Target Name="ConfigureNative" Condition="$(SkipLocalBuild) != true">
-    <DownloadFile SourceUrl="https://github.com/xxCherry/raylib-rhyt/archive/refs/tags/$(TargetRaylibTag).zip" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="raylib.zip" Condition="!Exists('$(BaseIntermediateOutputPath)raylib.zip')" />
-
-    <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip" DestinationFolder="$(BaseIntermediateOutputPath)" OverwriteReadOnlyFiles="true" Condition="!Exists('$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)')" />
-
-    <Copy SourceFiles="$(MSBuildProjectDirectory)/android_main.c" DestinationFolder="$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)/src" Condition="'$(BuildPlatform)' == 'Android'" />
-
-    <DownloadFile SourceUrl="https://github.com/kivy/angle-builder/releases/download/$(AngleTag)/angle-macos-$(AngleArch).tar.gz" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="angle.tar.gz" Condition="$([MSBuild]::IsOSPlatform('OSX')) And !Exists('$(BaseIntermediateOutputPath)angle.tar.gz')" />
-
-    <Exec Command="tar -xvzf $(BaseIntermediateOutputPath)angle.tar.gz -C $(BaseIntermediateOutputPath)" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
-      
-    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))">
-        <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)\src\CMakeLists.txt</RaylibCMakeListsFile>
-    </PropertyGroup>
-
-    <ReadLinesFromFile Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))" File="$(RaylibCMakeListsFile)">
-        <Output TaskParameter="Lines" ItemName="CMakeListsFile" />
-    </ReadLinesFromFile>
-
-    <ItemGroup Condition="'$(BuildPlatform)' == 'Android'">
-        <UpdatedCMakeLists Include="@(CMakeListsFile-&gt;Replace(`set(raylib_sources`, `set(raylib_sources android_main.c`)-&gt;Replace(`set_target_properties(raylib PROPERTIES`, `target_link_options(raylib PRIVATE &quot;-Wl,-z,max-page-size=16384&quot;)%0Aset_target_properties(raylib PROPERTIES`))" />
-    </ItemGroup>
-
-    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-        <CMakeArgs Include="-D ANGLE_EGL_PATH=$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libEGL.dylib -D ANGLE_GLES_PATH=$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libGLESv2.dylib" />
-        
-        <UpdatedCMakeLists Include="@(CMakeListsFile-&gt;Replace(`target_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot;)`,&#xD;&#xA;                      `message(STATUS &quot;Raylib-cs-custom: $(BaseIntermediateOutputPath)include&quot;)%0Atarget_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot; $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libEGL.dylib $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libGLESv2.dylib)`)-&gt;Replace(`${OPENGL_INCLUDE_DIR}`,&#xD;&#xA; `${OPENGL_INCLUDE_DIR} $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)include`))" />      
-    </ItemGroup>
-
-    <WriteLinesToFile File="$(RaylibCMakeListsFile)" Lines="@(UpdatedCMakeLists)" Overwrite="true" Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))" />
-
     <ItemGroup>
-        <AngleFiles Include="$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libEGL.dylib;$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libGLESv2.dylib"/>
+        <Content Include="$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)"
+                 Link="%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest"
+                 Condition="Exists('$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)')" />
+
+        <CMakeArgs Include="-B $(OutputPath)native" />
+        <CMakeArgs Include="-S $(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)" />
+        <CMakeArgs Include="-D CMAKE_BUILD_TYPE=$(Configuration)" />
+        <CMakeArgs Include="-D BUILD_SHARED_LIBS=ON" />
+        <CMakeArgs Include="-D BUILD_EXAMPLES=OFF" />
+        <CMakeArgs Include="-D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded" />
+        <CMakeArgs Include="-D CMAKE_MINIMUM_REQUIRED_VERSION=3.15" />
+        <CMakeArgs Include="-D CMAKE_POLICY_DEFAULT_CMP0091=NEW" />
     </ItemGroup>
 
-    <MakeDir Directories="$(OutputPath)native"
-        Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+    <Target Name="ConfigureNative" Condition="$(SkipLocalBuild) != true">
+        <DownloadFile SourceUrl="https://github.com/xxCherry/raylib-rhyt/archive/refs/tags/$(TargetRaylibTag).zip"
+                      DestinationFolder="$(BaseIntermediateOutputPath)"
+                      DestinationFileName="raylib.zip"
+                      Condition="!Exists('$(BaseIntermediateOutputPath)raylib.zip')" />
 
-    <Copy SourceFiles="@(AngleFiles)"
-        DestinationFolder="$(OutputPath)native"
-        SkipUnchangedFiles="true"
-        Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+        <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip"
+               DestinationFolder="$(BaseIntermediateOutputPath)"
+               OverwriteReadOnlyFiles="true"
+               Condition="!Exists('$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)')" />
 
-    <Exec Command="cmake @(CMakeArgs, ' ') $(CMakeExtraArgs)" />
-    <Exec Command="cmake --build $(OutputPath)native --config $(Configuration)" />
-  </Target>
+        <Copy SourceFiles="$(MSBuildProjectDirectory)/android_main.c"
+              DestinationFolder="$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)/src"
+              Condition="'$(BuildPlatform)' == 'Android'" />
+
+        <DownloadFile SourceUrl="https://github.com/kivy/angle-builder/releases/download/$(AngleTag)/angle-macos-$(AngleArch).tar.gz"
+                      DestinationFolder="$(BaseIntermediateOutputPath)"
+                      DestinationFileName="angle.tar.gz"
+                      Condition="$([MSBuild]::IsOSPlatform('OSX')) And !Exists('$(BaseIntermediateOutputPath)angle.tar.gz')" />
+
+        <Exec Command="tar -xvzf $(BaseIntermediateOutputPath)angle.tar.gz -C $(BaseIntermediateOutputPath)"
+              Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+
+        <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))">
+            <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)/src/CMakeLists.txt</RaylibCMakeListsFile>
+        </PropertyGroup>
+
+        <ReadLinesFromFile Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))"
+                           File="$(RaylibCMakeListsFile)">
+            <Output TaskParameter="Lines" ItemName="CMakeListsFile" />
+        </ReadLinesFromFile>
+
+        <ItemGroup Condition="'$(BuildPlatform)' == 'Android'">
+            <UpdatedCMakeLists Include="@(CMakeListsFile->Replace(`set(raylib_sources`, `set(raylib_sources android_main.c`)->Replace(`set_target_properties(raylib PROPERTIES`, `target_link_options(raylib PRIVATE &quot;-Wl,-z,max-page-size=16384&quot;)%0Aset_target_properties(raylib PROPERTIES`))" />
+        </ItemGroup>
+
+        <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+            <CMakeArgs Include="-D ANGLE_EGL_PATH=$(OutputPath)native/libEGL.dylib" />
+            <CMakeArgs Include="-D ANGLE_GLES_PATH=$(OutputPath)native/libGLESv2.dylib" />
+
+            <UpdatedCMakeLists Include="@(CMakeListsFile->Replace(`target_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot;)`, `message(STATUS &quot;Raylib-cs-custom: $(BaseIntermediateOutputPath)include&quot;)%0Atarget_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot; $(OutputPath)native/libEGL.dylib $(OutputPath)native/libGLESv2.dylib)`)->Replace(`${OPENGL_INCLUDE_DIR}`, `${OPENGL_INCLUDE_DIR} $(BaseIntermediateOutputPath)include`))" />
+
+            <AngleFiles Include="$(BaseIntermediateOutputPath)libEGL.dylib;$(BaseIntermediateOutputPath)libGLESv2.dylib" />
+        </ItemGroup>
+
+        <WriteLinesToFile File="$(RaylibCMakeListsFile)"
+                          Lines="@(UpdatedCMakeLists)"
+                          Overwrite="true"
+                          Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))" />
+
+        <MakeDir Directories="$(OutputPath)native"
+                 Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+
+        <Copy SourceFiles="@(AngleFiles)"
+              DestinationFolder="$(OutputPath)native"
+              SkipUnchangedFiles="true"
+              Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+
+        <Exec Command="cmake @(CMakeArgs, ' ') $(CMakeExtraArgs)" />
+        <Exec Command="cmake --build $(OutputPath)native --config $(Configuration)" />
+    </Target>
+
+    <Target Name="IncludeGeneratedNativeContent"
+            BeforeTargets="GetCopyToOutputDirectoryItems"
+            Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+
+        <ItemGroup>
+            <Content Include="$(OutputPath)native/libEGL.dylib"
+                     Condition="Exists('$(OutputPath)native/libEGL.dylib')">
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                <TargetPath>libEGL.dylib</TargetPath>
+                <Link>libEGL.dylib</Link>
+            </Content>
+
+            <Content Include="$(OutputPath)native/libGLESv2.dylib"
+                     Condition="Exists('$(OutputPath)native/libGLESv2.dylib')">
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                <TargetPath>libGLESv2.dylib</TargetPath>
+                <Link>libGLESv2.dylib</Link>
+            </Content>
+        </ItemGroup>
+
+        <Message Importance="High" Text="ANGLE content: @(Content)" />
+    </Target>
 </Project>
 

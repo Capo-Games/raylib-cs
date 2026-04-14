@@ -150,13 +150,4 @@
         <Exec Command="cmake @(CMakeArgs, ' ') $(CMakeExtraArgs)" />
         <Exec Command="cmake --build $(OutputPath)native --config $(Configuration)" />
     </Target>
-
-    <Target Name="IncludeAngleFiles" AfterTargets="ConfigureNative" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-        <ItemGroup>
-            <Content Include="$(OutputPath)native/libEGL.dylib"
-                     CopyToOutputDirectory="PreserveNewest" />
-            <Content Include="$(OutputPath)native/libGLESv2.dylib"
-                     CopyToOutputDirectory="PreserveNewest" />
-        </ItemGroup>
-    </Target>
 </Project>

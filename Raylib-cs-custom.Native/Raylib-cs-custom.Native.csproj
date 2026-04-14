@@ -86,7 +86,23 @@
 </ItemGroup>
 
   <ItemGroup>
-    <Content Include="$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Condition="Exists('$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)')" />
+      <!-- raylib -->
+      <Content Include="$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)"
+               Link="%(Filename)%(Extension)"
+               CopyToOutputDirectory="PreserveNewest"
+               Condition="Exists('$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)')" />
+
+      <!-- libEGL -->
+      <Content Include="$(OutputPath)native/libEGL.$(NativeExt)"
+               Link="libEGL.$(NativeExt)"
+               CopyToOutputDirectory="PreserveNewest"
+               Condition="Exists('$(OutputPath)native/libEGL.$(NativeExt)')" />
+
+      <!-- libGLESv2 -->
+      <Content Include="$(OutputPath)native/libGLESv2.$(NativeExt)"
+               Link="libGLESv2.$(NativeExt)"
+               CopyToOutputDirectory="PreserveNewest"
+               Condition="Exists('$(OutputPath)native/libGLESv2.$(NativeExt)')" />
 
     <CMakeArgs Include="-B $(OutputPath)native" />
     <CMakeArgs Include="-S $(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)" />

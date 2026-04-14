@@ -125,13 +125,20 @@
     </ItemGroup>
 
     <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-        <UpdatedCMakeLists Include="@(CMakeListsFile-&gt;Replace(`target_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot;)`,&#xD;&#xA;                      `message(STATUS &quot;Raylib-cs-custom: $(BaseIntermediateOutputPath)include&quot;)%0Atarget_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot; $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libEGL.dylib $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libGLESv2.dylib)`)-&gt;Replace(`${OPENGL_INCLUDE_DIR}`,&#xD;&#xA; `${OPENGL_INCLUDE_DIR} $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)include`))" />
+        <CMakeArgs Include="-D ANGLE_EGL_PATH=$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libEGL.dylib -D ANGLE_GLES_PATH=$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libGLESv2.dylib" />
+        
+        <UpdatedCMakeLists Include="@(CMakeListsFile-&gt;Replace(`target_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot;)`,&#xD;&#xA;                      `message(STATUS &quot;Raylib-cs-custom: $(BaseIntermediateOutputPath)include&quot;)%0Atarget_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot; $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libEGL.dylib $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libGLESv2.dylib)`)-&gt;Replace(`${OPENGL_INCLUDE_DIR}`,&#xD;&#xA; `${OPENGL_INCLUDE_DIR} $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)include`))" />      
     </ItemGroup>
 
     <WriteLinesToFile File="$(RaylibCMakeListsFile)" Lines="@(UpdatedCMakeLists)" Overwrite="true" Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))" />
-
+      
     <Exec Command="cmake @(CMakeArgs, ' ') $(CMakeExtraArgs)" />
     <Exec Command="cmake --build $(OutputPath)native --config $(Configuration)" />
+
+    <Copy SourceFiles="$(BaseIntermediateOutputPath)libEGL.dylib;$(BaseIntermediateOutputPath)libGLESv2.dylib"
+      DestinationFolder="$(OutputPath)native"
+      SkipUnchangedFiles="true"
+      Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
   </Target>
 </Project>
 

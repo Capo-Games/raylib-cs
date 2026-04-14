@@ -1,89 +1,89 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="ConfigureNative">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <DebugType>none</DebugType>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <GenerateDependencyFile>False</GenerateDependencyFile>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <DebugType>none</DebugType>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <GenerateDependencyFile>False</GenerateDependencyFile>
+    </PropertyGroup>
 
-  <Import Project="../Raylib-cs-custom/Build.props" />
-  
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
-    <NativeExt>so</NativeExt>
-    <NativePre>lib</NativePre>
-    <NativeArch>x64</NativeArch>
-  </PropertyGroup>
+    <Import Project="../Raylib-cs-custom/Build.props" />
 
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-    <NativeExt>dylib</NativeExt>
-    <NativePre>lib</NativePre>
-    <AngleTag Condition="$(BuildAngleTag) == ''">chromium-7151_rev1</AngleTag>
-    <AngleTag Condition="$(BuildAngleTag) != ''">$(BuildAngleTag)</AngleTag>
-    <NativeArch Condition="$(BuildArch) == ''">x86_64</NativeArch>
-    <NativeArch Condition="$(BuildArch) != ''">$(BuildArch)</NativeArch>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+        <NativeExt>so</NativeExt>
+        <NativePre>lib</NativePre>
+        <NativeArch>x64</NativeArch>
+    </PropertyGroup>
 
-    <AngleArch>arm64</AngleArch>
-    <AngleArch Condition="$(NativeArch) == 'x86_64'">x64</AngleArch>
-  </PropertyGroup>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+        <NativeExt>dylib</NativeExt>
+        <NativePre>lib</NativePre>
+        <AngleTag Condition="$(BuildAngleTag) == ''">chromium-7151_rev1</AngleTag>
+        <AngleTag Condition="$(BuildAngleTag) != ''">$(BuildAngleTag)</AngleTag>
+        <NativeArch Condition="$(BuildArch) == ''">x86_64</NativeArch>
+        <NativeArch Condition="$(BuildArch) != ''">$(BuildArch)</NativeArch>
 
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
-    <NativeExt>dll</NativeExt>
-    <NativePre>$(Configuration)/</NativePre>
-    <NativeArch Condition="$(BuildArch) == ''">x64</NativeArch>
-    <NativeArch Condition="$(BuildArch) != ''">$(BuildArch)</NativeArch>
-  </PropertyGroup>
+        <AngleArch>arm64</AngleArch>
+        <AngleArch Condition="$(NativeArch) == 'x86_64'">x64</AngleArch>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildPlatform)' == 'Android'">
-      <NativeExt>so</NativeExt>
-      <NativePre>lib</NativePre>
-      <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK)</AndroidNdk>
-      <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK_HOME)</AndroidNdk>
-      <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK_ROOT)</AndroidNdk>
-  </PropertyGroup>
-    
-  <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'arm'">
-      <NativeArch>armeabi-v7a</NativeArch>
-      <NativeRid>android-arm</NativeRid>
-  </PropertyGroup>
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <NativeExt>dll</NativeExt>
+        <NativePre>$(Configuration)/</NativePre>
+        <NativeArch Condition="$(BuildArch) == ''">x64</NativeArch>
+        <NativeArch Condition="$(BuildArch) != ''">$(BuildArch)</NativeArch>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'arm64'">
-      <NativeArch>arm64-v8a</NativeArch>
-      <NativeRid>android-arm64</NativeRid>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android'">
+        <NativeExt>so</NativeExt>
+        <NativePre>lib</NativePre>
+        <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK)</AndroidNdk>
+        <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK_HOME)</AndroidNdk>
+        <AndroidNdk Condition="'$(AndroidNdk)' == ''">$(ANDROID_NDK_ROOT)</AndroidNdk>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'x86'">
-      <NativeArch>x86</NativeArch>
-      <NativeRid>android-x86</NativeRid>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'arm'">
+        <NativeArch>armeabi-v7a</NativeArch>
+        <NativeRid>android-arm</NativeRid>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'x64'">
-      <NativeArch>x86_64</NativeArch>
-      <NativeRid>android-x64</NativeRid>
-  </PropertyGroup>
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'arm64'">
+        <NativeArch>arm64-v8a</NativeArch>
+        <NativeRid>android-arm64</NativeRid>
+    </PropertyGroup>
 
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) AND $(NativeArch) == 'arm64'">
-      <CMakeArgs Include="-DCUSTOMIZE_BUILD=ON -DOPENGL_VERSION=&quot;ES 2.0&quot; -D CMAKE_OSX_ARCHITECTURES=arm64" />
-  </ItemGroup>
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'x86'">
+        <NativeArch>x86</NativeArch>
+        <NativeRid>android-x86</NativeRid>
+    </PropertyGroup>
 
-  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) AND $(NativeArch) == 'x86_64'">
-    <CMakeArgs Include="-DCUSTOMIZE_BUILD=ON -DOPENGL_VERSION=&quot;ES 2.0&quot; -D CMAKE_OSX_ARCHITECTURES=x86_64" />  
-  </ItemGroup>
+    <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' AND '$(BuildArch)' == 'x64'">
+        <NativeArch>x86_64</NativeArch>
+        <NativeRid>android-x64</NativeRid>
+    </PropertyGroup>
 
-  <ItemGroup Condition="$([MSBuild]::IsOsPlatform('Windows')) AND $(NativeArch) == 'win32'">
-    <CMakeArgs Include="-A win32" />
-  </ItemGroup>
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) AND $(NativeArch) == 'arm64'">
+        <CMakeArgs Include="-DCUSTOMIZE_BUILD=ON -DOPENGL_VERSION=&quot;ES 2.0&quot; -D CMAKE_OSX_ARCHITECTURES=arm64" />
+    </ItemGroup>
 
-  <ItemGroup Condition="$([MSBuild]::IsOsPlatform('Windows')) AND $(NativeArch) == 'x64'">
-    <CMakeArgs Include="-A x64" />
-  </ItemGroup>
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX')) AND $(NativeArch) == 'x86_64'">
+        <CMakeArgs Include="-DCUSTOMIZE_BUILD=ON -DOPENGL_VERSION=&quot;ES 2.0&quot; -D CMAKE_OSX_ARCHITECTURES=x86_64" />
+    </ItemGroup>
 
-<ItemGroup Condition="'$(BuildPlatform)' == 'Android'">
-    <CMakeArgs Include="-D CMAKE_TOOLCHAIN_FILE=$(AndroidNdk)/build/cmake/android.toolchain.cmake" />
-    <CMakeArgs Include="-D PLATFORM=Android" />
-    <CMakeArgs Include="-D ANDROID_ABI=$(NativeArch)" />
-    <CMakeArgs Include="-D ANDROID_PLATFORM=21" />
-</ItemGroup>
+    <ItemGroup Condition="$([MSBuild]::IsOsPlatform('Windows')) AND $(NativeArch) == 'win32'">
+        <CMakeArgs Include="-A win32" />
+    </ItemGroup>
+
+    <ItemGroup Condition="$([MSBuild]::IsOsPlatform('Windows')) AND $(NativeArch) == 'x64'">
+        <CMakeArgs Include="-A x64" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(BuildPlatform)' == 'Android'">
+        <CMakeArgs Include="-D CMAKE_TOOLCHAIN_FILE=$(AndroidNdk)/build/cmake/android.toolchain.cmake" />
+        <CMakeArgs Include="-D PLATFORM=Android" />
+        <CMakeArgs Include="-D ANDROID_ABI=$(NativeArch)" />
+        <CMakeArgs Include="-D ANDROID_PLATFORM=21" />
+    </ItemGroup>
 
     <ItemGroup>
         <Content Include="$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)"
@@ -95,95 +95,68 @@
         <CMakeArgs Include="-S $(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)" />
         <CMakeArgs Include="-D CMAKE_BUILD_TYPE=$(Configuration)" />
         <CMakeArgs Include="-D BUILD_SHARED_LIBS=ON" />
+        <CMakeArgs Include="-D BUILD_SHARED_LIBS=ON" />
         <CMakeArgs Include="-D BUILD_EXAMPLES=OFF" />
         <CMakeArgs Include="-D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded" />
         <CMakeArgs Include="-D CMAKE_MINIMUM_REQUIRED_VERSION=3.15" />
         <CMakeArgs Include="-D CMAKE_POLICY_DEFAULT_CMP0091=NEW" />
+        <!-- <CMakeArgs Include="-D GLFW_BUILD_WAYLAND=ON" /> -->
+        <!-- <CMakeArgs Include="-D GRAPHICS=GRAPHICS_API_OPENGL_43" /> -->
     </ItemGroup>
 
     <Target Name="ConfigureNative" Condition="$(SkipLocalBuild) != true">
-        <DownloadFile SourceUrl="https://github.com/xxCherry/raylib-rhyt/archive/refs/tags/$(TargetRaylibTag).zip"
-                      DestinationFolder="$(BaseIntermediateOutputPath)"
-                      DestinationFileName="raylib.zip"
-                      Condition="!Exists('$(BaseIntermediateOutputPath)raylib.zip')" />
+        <DownloadFile SourceUrl="https://github.com/xxCherry/raylib-rhyt/archive/refs/tags/$(TargetRaylibTag).zip" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="raylib.zip" Condition="!Exists('$(BaseIntermediateOutputPath)raylib.zip')" />
 
-        <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip"
-               DestinationFolder="$(BaseIntermediateOutputPath)"
-               OverwriteReadOnlyFiles="true"
-               Condition="!Exists('$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)')" />
+        <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip" DestinationFolder="$(BaseIntermediateOutputPath)" OverwriteReadOnlyFiles="true" Condition="!Exists('$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)')" />
 
-        <Copy SourceFiles="$(MSBuildProjectDirectory)/android_main.c"
-              DestinationFolder="$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)/src"
-              Condition="'$(BuildPlatform)' == 'Android'" />
+        <Copy SourceFiles="$(MSBuildProjectDirectory)/android_main.c" DestinationFolder="$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)/src" Condition="'$(BuildPlatform)' == 'Android'" />
 
-        <DownloadFile SourceUrl="https://github.com/kivy/angle-builder/releases/download/$(AngleTag)/angle-macos-$(AngleArch).tar.gz"
-                      DestinationFolder="$(BaseIntermediateOutputPath)"
-                      DestinationFileName="angle.tar.gz"
-                      Condition="$([MSBuild]::IsOSPlatform('OSX')) And !Exists('$(BaseIntermediateOutputPath)angle.tar.gz')" />
+        <DownloadFile SourceUrl="https://github.com/kivy/angle-builder/releases/download/$(AngleTag)/angle-macos-$(AngleArch).tar.gz" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="angle.tar.gz" Condition="$([MSBuild]::IsOSPlatform('OSX')) And !Exists('$(BaseIntermediateOutputPath)angle.tar.gz')" />
 
-        <Exec Command="tar -xvzf $(BaseIntermediateOutputPath)angle.tar.gz -C $(BaseIntermediateOutputPath)"
-              Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+        <Exec Command="tar -xvzf $(BaseIntermediateOutputPath)angle.tar.gz -C $(BaseIntermediateOutputPath)" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
 
         <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))">
-            <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)/src/CMakeLists.txt</RaylibCMakeListsFile>
+            <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)\src\CMakeLists.txt</RaylibCMakeListsFile>
         </PropertyGroup>
 
-        <ReadLinesFromFile Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))"
-                           File="$(RaylibCMakeListsFile)">
+        <ReadLinesFromFile Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))" File="$(RaylibCMakeListsFile)">
             <Output TaskParameter="Lines" ItemName="CMakeListsFile" />
         </ReadLinesFromFile>
 
         <ItemGroup Condition="'$(BuildPlatform)' == 'Android'">
-            <UpdatedCMakeLists Include="@(CMakeListsFile->Replace(`set(raylib_sources`, `set(raylib_sources android_main.c`)->Replace(`set_target_properties(raylib PROPERTIES`, `target_link_options(raylib PRIVATE &quot;-Wl,-z,max-page-size=16384&quot;)%0Aset_target_properties(raylib PROPERTIES`))" />
+            <UpdatedCMakeLists Include="@(CMakeListsFile-&gt;Replace(`set(raylib_sources`, `set(raylib_sources android_main.c`)-&gt;Replace(`set_target_properties(raylib PROPERTIES`, `target_link_options(raylib PRIVATE &quot;-Wl,-z,max-page-size=16384&quot;)%0Aset_target_properties(raylib PROPERTIES`))" />
         </ItemGroup>
 
         <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-            <CMakeArgs Include="-D ANGLE_EGL_PATH=$(OutputPath)native/libEGL.dylib" />
-            <CMakeArgs Include="-D ANGLE_GLES_PATH=$(OutputPath)native/libGLESv2.dylib" />
+            <CMakeArgs Include="-D ANGLE_EGL_PATH=$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libEGL.dylib -D ANGLE_GLES_PATH=$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libGLESv2.dylib" />
 
-            <UpdatedCMakeLists Include="@(CMakeListsFile->Replace(`target_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot;)`, `message(STATUS &quot;Raylib-cs-custom: $(BaseIntermediateOutputPath)include&quot;)%0Atarget_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot; $(OutputPath)native/libEGL.dylib $(OutputPath)native/libGLESv2.dylib)`)->Replace(`${OPENGL_INCLUDE_DIR}`, `${OPENGL_INCLUDE_DIR} $(BaseIntermediateOutputPath)include`))" />
-
-            <AngleFiles Include="$(BaseIntermediateOutputPath)libEGL.dylib;$(BaseIntermediateOutputPath)libGLESv2.dylib" />
+            <UpdatedCMakeLists Include="@(CMakeListsFile-&gt;Replace(`target_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot;)`,&#xD;&#xA;                      `message(STATUS &quot;Raylib-cs-custom: $(BaseIntermediateOutputPath)include&quot;)%0Atarget_link_libraries(raylib &quot;${LIBS_PRIVATE}&quot; $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libEGL.dylib $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libGLESv2.dylib)`)-&gt;Replace(`${OPENGL_INCLUDE_DIR}`,&#xD;&#xA; `${OPENGL_INCLUDE_DIR} $(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)include`))" />
         </ItemGroup>
 
-        <WriteLinesToFile File="$(RaylibCMakeListsFile)"
-                          Lines="@(UpdatedCMakeLists)"
-                          Overwrite="true"
-                          Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))" />
+        <WriteLinesToFile File="$(RaylibCMakeListsFile)" Lines="@(UpdatedCMakeLists)" Overwrite="true" Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))" />
+
+        <ItemGroup>
+            <AngleFiles Include="$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libEGL.dylib;$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libGLESv2.dylib"/>
+        </ItemGroup>
 
         <MakeDir Directories="$(OutputPath)native"
-                 Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+            Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
 
         <Copy SourceFiles="@(AngleFiles)"
-              DestinationFolder="$(OutputPath)native"
-              SkipUnchangedFiles="true"
-              Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+            DestinationFolder="$(OutputPath)native"
+            SkipUnchangedFiles="true"
+            Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
 
         <Exec Command="cmake @(CMakeArgs, ' ') $(CMakeExtraArgs)" />
         <Exec Command="cmake --build $(OutputPath)native --config $(Configuration)" />
     </Target>
 
-    <Target Name="IncludeGeneratedNativeContent"
-            BeforeTargets="GetCopyToOutputDirectoryItems"
-            Condition="$([MSBuild]::IsOSPlatform('OSX'))">
-
+    <Target Name="IncludeAngleFiles" AfterTargets="ConfigureNative" Condition="$([MSBuild]::IsOSPlatform('OSX'))">
         <ItemGroup>
             <Content Include="$(OutputPath)native/libEGL.dylib"
-                     Condition="Exists('$(OutputPath)native/libEGL.dylib')">
-                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-                <TargetPath>libEGL.dylib</TargetPath>
-                <Link>libEGL.dylib</Link>
-            </Content>
-
+                     CopyToOutputDirectory="PreserveNewest" />
             <Content Include="$(OutputPath)native/libGLESv2.dylib"
-                     Condition="Exists('$(OutputPath)native/libGLESv2.dylib')">
-                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-                <TargetPath>libGLESv2.dylib</TargetPath>
-                <Link>libGLESv2.dylib</Link>
-            </Content>
+                     CopyToOutputDirectory="PreserveNewest" />
         </ItemGroup>
-
-        <Message Importance="High" Text="ANGLE content: @(Content)" />
     </Target>
 </Project>
-

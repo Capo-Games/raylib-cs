@@ -139,13 +139,13 @@
             <AngleFiles Include="$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libEGL.dylib;$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)libGLESv2.dylib"/>
         </ItemGroup>
 
-        <MakeDir Directories="$(OutputPath)native"
-            Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+        <MakeDir Directories="$(OutputPath)native/raylib"
+                 Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
 
         <Copy SourceFiles="@(AngleFiles)"
-            DestinationFolder="$(OutputPath)native"
-            SkipUnchangedFiles="true"
-            Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+              DestinationFolder="$(OutputPath)native/raylib"
+              SkipUnchangedFiles="true"
+              Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
 
         <Exec Command="cmake @(CMakeArgs, ' ') $(CMakeExtraArgs)" />
         <Exec Command="cmake --build $(OutputPath)native --config $(Configuration)" />

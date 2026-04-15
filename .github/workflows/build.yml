@@ -101,8 +101,8 @@ jobs:
           name: osx-${{ matrix.name }}
           path: |
             Raylib-cs-custom.Native/bin/Release/native/raylib/libraylib.dylib 
-            Raylib-cs-custom.Native/bin/Release/native/libEGL.dylib 
-            Raylib-cs-custom.Native/bin/Release/native/libGLESv2.dylib
+            Raylib-cs-custom.Native/bin/Release/native/raylib/libEGL.dylib 
+            Raylib-cs-custom.Native/bin/Release/native/raylib/libGLESv2.dylib
           if-no-files-found: error
 
   build-windows:

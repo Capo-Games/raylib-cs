@@ -78,6 +78,10 @@
         <CMakeArgs Include="-A x64" />
     </ItemGroup>
 
+    <ItemGroup Condition="$([MSBuild]::IsOsPlatform('Windows')) AND $(NativeArch) == 'arm64'">
+        <CMakeArgs Include="-A ARM64" />
+    </ItemGroup>
+
     <ItemGroup Condition="'$(BuildPlatform)' == 'Android'">
         <CMakeArgs Include="-D CMAKE_TOOLCHAIN_FILE=$(AndroidNdk)/build/cmake/android.toolchain.cmake" />
         <CMakeArgs Include="-D PLATFORM=Android" />
@@ -94,7 +98,6 @@
         <CMakeArgs Include="-B $(OutputPath)native" />
         <CMakeArgs Include="-S $(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)" />
         <CMakeArgs Include="-D CMAKE_BUILD_TYPE=$(Configuration)" />
-        <CMakeArgs Include="-D BUILD_SHARED_LIBS=ON" />
         <CMakeArgs Include="-D BUILD_SHARED_LIBS=ON" />
         <CMakeArgs Include="-D BUILD_EXAMPLES=OFF" />
         <CMakeArgs Include="-D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded" />

@@ -110,12 +110,14 @@ jobs:
     needs: build
     strategy:
       matrix:
-        name: [x86, x64]
+        name: [x86, x64, arm64]
         include:
           - name: x86
             arch: win32
           - name: x64
             arch: x64
+          - name: arm64
+            arch: arm64
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
@@ -219,6 +221,11 @@ jobs:
         with:
           name: win-x64
           path: Raylib-cs-custom/runtimes/win-x64/native
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: win-arm64
+          path: Raylib-cs-custom/runtimes/win-arm64/native
 
       - uses: actions/download-artifact@v4
         with:

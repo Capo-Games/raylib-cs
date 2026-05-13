@@ -103,7 +103,7 @@
         <CMakeArgs Include="-D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded" />
         <CMakeArgs Include="-D CMAKE_MINIMUM_REQUIRED_VERSION=3.15" />
         <CMakeArgs Include="-D CMAKE_POLICY_DEFAULT_CMP0091=NEW" />
-        <CMakeArgs Include="-D SUPPORT_FILEFORMAT_JPG=1" />
+        <CMakeArgs Include="-D SUPPORT_FILEFORMAT_JPG=ON" />
         <!-- <CMakeArgs Include="-D GLFW_BUILD_WAYLAND=ON" /> -->
         <!-- <CMakeArgs Include="-D GRAPHICS=GRAPHICS_API_OPENGL_43" /> -->
     </ItemGroup>

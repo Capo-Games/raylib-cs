@@ -110,14 +110,12 @@ jobs:
     needs: build
     strategy:
       matrix:
-        name: [x86, x64, arm64]
+        name: [x86, x64]
         include:
           - name: x86
             arch: win32
           - name: x64
             arch: x64
-          - name: arm64
-            arch: arm64
     steps:
       - name: checkout repository
         uses: actions/checkout@v4

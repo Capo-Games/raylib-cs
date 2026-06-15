@@ -219,12 +219,7 @@ jobs:
         with:
           name: win-x64
           path: Raylib-cs-custom/runtimes/win-x64/native
-
-      - uses: actions/download-artifact@v4.1.7
-        with:
-          name: win-arm64
-          path: Raylib-cs-custom/runtimes/win-arm64/native
-
+          
       - uses: actions/download-artifact@v4
         with:
           name: android-arm

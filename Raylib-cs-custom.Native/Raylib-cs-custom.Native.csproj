@@ -70,6 +70,10 @@
         <CMakeArgs Include="-DCUSTOMIZE_BUILD=ON -DOPENGL_VERSION=&quot;ES 2.0&quot; -D CMAKE_OSX_ARCHITECTURES=x86_64" />
     </ItemGroup>
 
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+       <CMakeArgs Include="-DSUPPORT_FILEFORMAT_JPG=ON" />
+    </ItemGroup>
+
     <ItemGroup Condition="$([MSBuild]::IsOsPlatform('Windows')) AND $(NativeArch) == 'win32'">
         <CMakeArgs Include="-A win32" />
     </ItemGroup>

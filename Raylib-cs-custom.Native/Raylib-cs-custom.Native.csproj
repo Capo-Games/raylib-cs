@@ -1,6 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="ConfigureNative">
+<Project Sdk="Microsoft.NET.Sdk" InitialTargets="ConfigureNative">
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
+        <LangVersion>latest</LangVersion>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <DebugType>none</DebugType>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -32,6 +33,28 @@
         <NativePre>$(Configuration)/</NativePre>
         <NativeArch Condition="$(BuildArch) == ''">x64</NativeArch>
         <NativeArch Condition="$(BuildArch) != ''">$(BuildArch)</NativeArch>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <WgpuNativeTag Condition="'$(WgpuNativeTag)' == ''">v29.0.0.0</WgpuNativeTag>
+        <Sdl3Version Condition="'$(Sdl3Version)' == ''">3.2.22</Sdl3Version>
+        <WgpuRoot>$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)wgpu-native-$(NativeArch)</WgpuRoot>
+        <Sdl3UnzipDir>$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)sdl3-$(Sdl3Version)-$(NativeArch)</Sdl3UnzipDir>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) AND '$(NativeArch)' == 'x64'">
+        <WgpuArch>x86_64</WgpuArch>
+        <Sdl3LibArch>x64</Sdl3LibArch>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) AND '$(NativeArch)' == 'win32'">
+        <WgpuArch>i686</WgpuArch>
+        <Sdl3LibArch>x86</Sdl3LibArch>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows')) AND '$(NativeArch)' == 'arm64'">
+        <WgpuArch>aarch64</WgpuArch>
+        <Sdl3LibArch>arm64</Sdl3LibArch>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(BuildPlatform)' == 'Android'">
@@ -86,6 +109,13 @@
         <CMakeArgs Include="-A ARM64" />
     </ItemGroup>
 
+    <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+        <CMakeArgs Include="-D PLATFORM=SDL" />
+        <CMakeArgs Include="-D GRAPHICS_API=WGPU" />
+        <CMakeArgs Include="-D WGPU_NATIVE_INCLUDE_DIR=$(WgpuRoot)/include" />
+        <CMakeArgs Include="-D WGPU_NATIVE_LIBRARY=$(WgpuRoot)/lib/wgpu_native.dll.lib" />
+    </ItemGroup>
+
     <ItemGroup Condition="'$(BuildPlatform)' == 'Android'">
         <CMakeArgs Include="-D CMAKE_TOOLCHAIN_FILE=$(AndroidNdk)/build/cmake/android.toolchain.cmake" />
         <CMakeArgs Include="-D PLATFORM=Android" />
@@ -98,6 +128,16 @@
                  Link="%(Filename)%(Extension)"
                  CopyToOutputDirectory="PreserveNewest"
                  Condition="Exists('$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)')" />
+
+        <Content Include="$(OutputPath)native/raylib/$(NativePre)SDL3.dll"
+                 Link="%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest"
+                 Condition="$([MSBuild]::IsOSPlatform('Windows')) And Exists('$(OutputPath)native/raylib/$(NativePre)SDL3.dll')" />
+
+        <Content Include="$(OutputPath)native/raylib/$(NativePre)wgpu_native.dll"
+                 Link="%(Filename)%(Extension)"
+                 CopyToOutputDirectory="PreserveNewest"
+                 Condition="$([MSBuild]::IsOSPlatform('Windows')) And Exists('$(OutputPath)native/raylib/$(NativePre)wgpu_native.dll')" />
 
         <CMakeArgs Include="-B $(OutputPath)native" />
         <CMakeArgs Include="-S $(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)" />
@@ -121,6 +161,39 @@
         <DownloadFile SourceUrl="https://github.com/kivy/angle-builder/releases/download/$(AngleTag)/angle-macos-$(AngleArch).tar.gz" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="angle.tar.gz" Condition="$([MSBuild]::IsOSPlatform('OSX')) And !Exists('$(BaseIntermediateOutputPath)angle.tar.gz')" />
 
         <Exec Command="tar -xvzf $(BaseIntermediateOutputPath)angle.tar.gz -C $(BaseIntermediateOutputPath)" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
+
+        <DownloadFile SourceUrl="https://github.com/gfx-rs/wgpu-native/releases/download/$(WgpuNativeTag)/wgpu-windows-$(WgpuArch)-msvc-release.zip"
+                      DestinationFolder="$(BaseIntermediateOutputPath)"
+                      DestinationFileName="wgpu-native-$(NativeArch).zip"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows')) And !Exists('$(BaseIntermediateOutputPath)wgpu-native-$(NativeArch).zip')" />
+
+        <Unzip SourceFiles="$(BaseIntermediateOutputPath)wgpu-native-$(NativeArch).zip"
+               DestinationFolder="$(WgpuRoot)"
+               OverwriteReadOnlyFiles="true"
+               Condition="$([MSBuild]::IsOSPlatform('Windows')) And !Exists('$(WgpuRoot)/lib/wgpu_native.dll')" />
+
+        <DownloadFile SourceUrl="https://github.com/libsdl-org/SDL/releases/download/release-$(Sdl3Version)/SDL3-devel-$(Sdl3Version)-VC.zip"
+                      DestinationFolder="$(BaseIntermediateOutputPath)"
+                      DestinationFileName="sdl3-$(Sdl3Version).zip"
+                      Condition="$([MSBuild]::IsOSPlatform('Windows')) And !Exists('$(BaseIntermediateOutputPath)sdl3-$(Sdl3Version).zip')" />
+
+        <Unzip SourceFiles="$(BaseIntermediateOutputPath)sdl3-$(Sdl3Version).zip"
+               DestinationFolder="$(Sdl3UnzipDir)"
+               OverwriteReadOnlyFiles="true"
+               Condition="$([MSBuild]::IsOSPlatform('Windows')) And !Exists('$(Sdl3UnzipDir)')" />
+
+        <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+            <Sdl3ConfigFile Include="$(Sdl3UnzipDir)/**/SDL3Config.cmake;$(Sdl3UnzipDir)/**/sdl3-config.cmake" />
+            <Sdl3Dll Include="$(Sdl3UnzipDir)/**/lib/$(Sdl3LibArch)/SDL3.dll" />
+        </ItemGroup>
+
+        <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+            <Sdl3CmakeDir>@(Sdl3ConfigFile->'%(RootDir)%(Directory)'->Distinct())</Sdl3CmakeDir>
+        </PropertyGroup>
+
+        <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+            <CMakeArgs Include="-D SDL3_DIR=$(Sdl3CmakeDir)" />
+        </ItemGroup>
 
         <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))">
             <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)\src\CMakeLists.txt</RaylibCMakeListsFile>
@@ -156,5 +229,15 @@
 
         <Exec Command="cmake @(CMakeArgs, ' ') $(CMakeExtraArgs)" />
         <Exec Command="cmake --build $(OutputPath)native --config $(Configuration)" />
+
+        <Copy SourceFiles="$(WgpuRoot)/lib/wgpu_native.dll"
+              DestinationFolder="$(OutputPath)native/raylib/$(NativePre)"
+              SkipUnchangedFiles="true"
+              Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+
+        <Copy SourceFiles="@(Sdl3Dll)"
+              DestinationFolder="$(OutputPath)native/raylib/$(NativePre)"
+              SkipUnchangedFiles="true"
+              Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
     </Target>
 </Project>

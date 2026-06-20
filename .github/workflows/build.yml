@@ -137,7 +137,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: win-${{ matrix.name }}
-          path: Raylib-cs-custom.Native/bin/Release/native/raylib/Release/raylib.dll
+          path: |
+            Raylib-cs-custom.Native/bin/Release/native/raylib/Release/raylib.dll
+            Raylib-cs-custom.Native/bin/Release/native/raylib/Release/SDL3.dll
+            Raylib-cs-custom.Native/bin/Release/native/raylib/Release/wgpu_native.dll
           if-no-files-found: error
 
   # build-android:

@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raylib-cs-custom", "Raylib-cs-custom\Raylib-cs-custom.csproj", "{236DB383-2FDC-4A77-8B33-22122D9B8950}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raylib-cs-custom.Tests", "Raylib-cs-custom.Tests\Raylib-cs-custom.Tests.csproj", "{1341D222-7E10-42C6-BC6E-4A46C934A843}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Raylib-cs-custom.Native", "Raylib-cs-custom.Native\Raylib-cs-custom.Native.csproj", "{B89AA313-3675-42A3-80BC-6156913E3A27}"
 EndProject
 Global

@@ -25,35 +25,18 @@ public static unsafe partial class Raylib
         SetWindowTitle(str1.AsPointer());
     }
 
-    /// <summary>Set title for window (only PLATFORM_DESKTOP)</summary>
-    public static void InitAudioDevice(string deviceName = "")
+    /// <summary>Set icon for window (multiple images, RGBA 32bit)</summary>
+    public static void SetWindowIcons(Image[] images)
     {
-        if (string.IsNullOrEmpty(deviceName))
+        if (images == null || images.Length == 0)
         {
-            InitAudioDevice((sbyte*)0);
             return;
         }
 
-        using Utf8Buffer str1 = deviceName.ToUtf8Buffer();
-        InitAudioDevice(str1.AsPointer());
-    }
-
-    public static List<DeviceInfo> QueryAudioDevices()
-    {
-        var result = new List<DeviceInfo>();
-
-        [UnmanagedCallersOnly]
-        static void queryDevices(int index, sbyte* deviceName, sbyte isDefault)
+        fixed (Image* imagesPtr = images)
         {
-            deviceInfos.Add(new DeviceInfo(index, Utf8StringUtils.GetUTF8String(deviceName), isDefault == 1));
+            SetWindowIcons(imagesPtr, images.Length);
         }
-
-        QueryAudioDevices(&queryDevices);
-
-        result.AddRange(deviceInfos);
-        deviceInfos.Clear();
-
-        return result;
     }
 
     /// <summary>Get the human-readable, UTF-8 encoded name of the specified monitor</summary>
@@ -138,7 +121,7 @@ public static unsafe partial class Raylib
     public static long GetFileModTime(string fileName)
     {
         using AnsiBuffer str1 = fileName.ToAnsiBuffer();
-        return GetFileModTime(str1.AsPointer());
+        return GetFileModTime(str1.AsPointer()).Value;
     }
 
     /// <summary>Load image from file into CPU memory (RAM)</summary>
@@ -146,6 +129,19 @@ public static unsafe partial class Raylib
     {
         using AnsiBuffer str1 = fileName.ToAnsiBuffer();
         return LoadImage(str1.AsPointer());
+    }
+
+    /// <summary>Load image sequence from memory buffer</summary>
+    public static Image LoadImageAnimFromMemory(string fileType, byte[] fileData, out int frames)
+    {
+        using AnsiBuffer type = fileType.ToAnsiBuffer();
+        fixed (byte* data = fileData)
+        {
+            int frameCount;
+            var result = LoadImageAnimFromMemory(type.AsPointer(), data, fileData.Length, &frameCount);
+            frames = frameCount;
+            return result;
+        }
     }
 
     /// <summary>Load image from RAW file data</summary>
@@ -228,7 +224,7 @@ public static unsafe partial class Raylib
 
     /// <summary>Set shader uniform value</summary>
     public static void SetShaderValue<T>(Shader shader, int locIndex, T value, ShaderUniformDataType uniformType)
-    where T : unmanaged
+        where T : unmanaged
     {
         SetShaderValue(shader, locIndex, &value, uniformType);
     }
@@ -265,7 +261,7 @@ public static unsafe partial class Raylib
     }
 
     /// <summary>Save data to file from an unmanaged type</summary>
-    /// <returns>True if the operation was successfully</returns>
+    /// <returns>True if the operation was successful</returns>
     public static CBool SaveFileData<T>(T data, string fileName) where T : unmanaged
     {
         using AnsiBuffer ansiBuffer = fileName.ToAnsiBuffer();
@@ -273,13 +269,14 @@ public static unsafe partial class Raylib
     }
 
     /// <summary>Save data to file from an unmanaged type</summary>
-    /// <returns>True if the operation was successfully</returns>
+    /// <returns>True if the operation was successful</returns>
     public static CBool SaveFileData<T>(T[] data, string fileName) where T : unmanaged
     {
         if (data == null || data.Length == 0)
         {
             return false;
         }
+
         fixed (T* ptr = data)
         {
             using AnsiBuffer ansiBuffer = fileName.ToAnsiBuffer();
@@ -287,40 +284,27 @@ public static unsafe partial class Raylib
         }
     }
 
+    /// <summary>Export data to code (.h), returns true on success</summary>
+    public static CBool ExportDataAsCode(byte[] data, string fileName)
+    {
+        fixed (byte* ptr = data)
+        {
+            using AnsiBuffer name = fileName.ToAnsiBuffer();
+            return ExportDataAsCode(ptr, data.Length, name.AsPointer());
+        }
+    }
+
     /// <summary>Load file data as byte array (read)</summary>
-    public static byte* LoadFileData(string fileName, ref int bytesRead)
+    public static byte* LoadFileData(string fileName, ref int dataSize)
     {
         using AnsiBuffer str1 = fileName.ToAnsiBuffer();
-        fixed (int* p = &bytesRead)
+        fixed (int* p = &dataSize)
         {
             return LoadFileData(str1.AsPointer(), p);
         }
     }
 
-    public static byte[] LoadFileData(string fileName)
-    {
-        int length = 0;
-        byte* data = LoadFileData(fileName, ref length);
-        byte[] arr = new byte[length];
-        Marshal.Copy((IntPtr)data, arr, 0, length);
-        UnloadFileData(data);
-        return arr;
-    }
-
-    /// <summary>
-    /// Load file data as an array of unmanaged types
-    /// </summary>
-    public static T[] LoadFileData<T>(string fileName) where T : unmanaged
-    {
-        int length = 0;
-        byte* data = LoadFileData(fileName, ref length);
-        Span<T> values = new Span<T>(data, length / sizeof(T));
-        T[] arr = values.ToArray();
-        UnloadFileData(data);
-        return arr;
-    }
-
-    /// <summary>Get dropped files names (memory should be freed)</summary>
+    /// <summary>Get dropped files names</summary>
     public static string[] GetDroppedFiles()
     {
         FilePathList filePathList = LoadDroppedFiles();
@@ -330,6 +314,7 @@ public static unsafe partial class Raylib
         {
             files[i] = filePathList[i];
         }
+
         UnloadDroppedFiles(filePathList);
 
         return files;
@@ -445,7 +430,7 @@ public static unsafe partial class Raylib
         CBool lockView,
         CBool rotateAroundTarget,
         CBool rotateUp
-        )
+    )
     {
         fixed (Camera3D* c = &camera)
         {
@@ -497,6 +482,7 @@ public static unsafe partial class Raylib
         }
     }
 
+    /// <summary>Check if point is within a polygon described by array of vertices</summary>
     public static CBool CheckCollisionPointPoly(Vector2 point, Vector2[] points)
     {
         fixed (Vector2* p = points)
@@ -831,6 +817,16 @@ public static unsafe partial class Raylib
         }
     }
 
+    /// <summary>Draw circle within an image (Vector version)</summary>
+    public static void ImageDrawCircleV(ref Image dst, Vector2 center, int radius, Color color)
+    {
+        fixed (Image* p = &dst)
+        {
+            ImageDrawCircleV(p, center, radius, color);
+        }
+    }
+
+    /// <summary>Draw circle outline within an image</summary>
     public static void ImageDrawCircleLines(ref Image dst, int centerX, int centerY, int radius, Color color)
     {
         fixed (Image* p = &dst)
@@ -839,20 +835,12 @@ public static unsafe partial class Raylib
         }
     }
 
+    /// <summary>Draw circle outline within an image (Vector version)</summary>
     public static void ImageDrawCircleLinesV(ref Image dst, Vector2 center, int radius, Color color)
     {
         fixed (Image* p = &dst)
         {
             ImageDrawCircleLinesV(p, center, radius, color);
-        }
-    }
-
-    /// <summary>Draw circle within an image (Vector version)</summary>
-    public static void ImageDrawCircleV(ref Image dst, Vector2 center, int radius, Color color)
-    {
-        fixed (Image* p = &dst)
-        {
-            ImageDrawCircleV(p, center, radius, color);
         }
     }
 
@@ -902,7 +890,8 @@ public static unsafe partial class Raylib
     }
 
     /// <summary>Draw triangle with interpolated colors within an image</summary>
-    public static void ImageDrawTriangleEx(ref Image dst, Vector2 v1, Vector2 v2, Vector2 v3, Color c1, Color c2, Color c3)
+    public static void ImageDrawTriangleEx(ref Image dst, Vector2 v1, Vector2 v2, Vector2 v3, Color c1, Color c2,
+        Color c3)
     {
         fixed (Image* p = &dst)
         {
@@ -1121,12 +1110,57 @@ public static unsafe partial class Raylib
         }
     }
 
+    /// <summary>Load model animations from file</summary>
+    public static Span<ModelAnimation> LoadModelAnimations(string fileName)
+    {
+        using AnsiBuffer str1 = fileName.ToAnsiBuffer();
+        int count;
+
+        ModelAnimation* result = LoadModelAnimations(str1.AsPointer(), &count);
+        return new Span<ModelAnimation>(result, count);
+    }
+
+    public static void UnloadModelAnimations(Span<ModelAnimation> animations)
+    {
+        fixed (ModelAnimation* ptr = animations)
+        {
+            UnloadModelAnimations(ptr, animations.Length);
+        }
+    }
+
     /// <summary>Compute mesh tangents</summary>
     public static void GenMeshTangents(ref Mesh mesh)
     {
         fixed (Mesh* p = &mesh)
         {
             GenMeshTangents(p);
+        }
+    }
+
+    /// <summary>Update sound buffer with new data</summary>
+    public static void UpdateSound<T>(Sound sound, ReadOnlySpan<T> data, int sampleCount) where T : unmanaged
+    {
+        fixed (T* dataPtr = data)
+        {
+            UpdateSound(sound, dataPtr, sampleCount);
+        }
+    }
+
+    /// <summary>Update sound buffer with new data</summary>
+    public static void UpdateSound<T>(Sound sound, ReadOnlySpan<T> data) where T : unmanaged
+    {
+        fixed (T* dataPtr = data)
+        {
+            UpdateSound(sound, dataPtr, data.Length);
+        }
+    }
+
+    /// <summary>Update audio stream buffers with data</summary>
+    public static void UpdateAudioStream<T>(AudioStream sound, ReadOnlySpan<T> data, int frameCount) where T : unmanaged
+    {
+        fixed (T* dataPtr = data)
+        {
+            UpdateAudioStream(sound, dataPtr, frameCount);
         }
     }
 
@@ -1250,6 +1284,33 @@ public static unsafe partial class Raylib
         DrawTextPro(font, str1.AsPointer(), position, origin, rotation, fontSize, spacing, tint);
     }
 
+    /// <summary>Draw multiple characters (codepoint)</summary>
+    public static void DrawTextCodepoints(
+        Font font,
+        int[] codepoints,
+        Vector2 position,
+        float fontSize,
+        float spacing,
+        Color tint
+    )
+    {
+        fixed (int* codepointsPtr = codepoints)
+        {
+            DrawTextCodepoints(font, codepointsPtr, codepoints.Length, position, fontSize, spacing, tint);
+        }
+    }
+
+    /// <summary>Measure string size for Font</summary>
+    public static Vector2 MeasureTextCodepoints(
+        Font font, int[] codepoints, float fontSize, float spacing
+    )
+    {
+        fixed (int* codepointsPtr = codepoints)
+        {
+            return MeasureTextCodepoints(font, codepointsPtr, codepoints.Length, fontSize, spacing);
+        }
+    }
+
     /// <summary>Measure string width for default font</summary>
     public static int MeasureText(string text, int fontSize)
     {
@@ -1316,7 +1377,7 @@ public static unsafe partial class Raylib
         }
     }
 
-    /// <summary>Draw a model (with texture if set)</summary>
+    /// <summary>Load model from files (meshes and materials)</summary>
     public static Model LoadModel(string fileName)
     {
         using AnsiBuffer str1 = fileName.ToAnsiBuffer();
@@ -1520,12 +1581,12 @@ public static unsafe partial class Raylib
 
     public static string GetApplicationDirectoryString()
     {
-        return new string(GetApplicationDirectory());
+        return Utf8StringUtils.GetUTF8String(GetApplicationDirectory());
     }
 
     public static string GetWorkingDirectoryString()
     {
-        return new string(GetWorkingDirectory());
+        return Utf8StringUtils.GetUTF8String(GetWorkingDirectory());
     }
 
     /// <summary>
@@ -1540,13 +1601,14 @@ public static unsafe partial class Raylib
         int temp = min;
         min = Math.Min(min, max);
         max = Math.Max(temp, max);
+
         int* sequence = LoadRandomSequence(count, min, max);
         int[] output = new int[count];
-        //Marshal.Copy((IntPtr)sequence, output, 0, count);
         for (uint i = 0; i < count; i++)
         {
             output[i] = sequence[i];
         }
+
         UnloadRandomSequence(sequence);
         return output;
     }
@@ -1564,6 +1626,7 @@ public static unsafe partial class Raylib
         min = Math.Min(min, max);
         max = Math.Max(temp, max);
         const int maxi = 100000;
+
         int* sequence = LoadRandomSequence(count, 0, maxi);
         float[] output = new float[count];
         for (uint i = 0; i < count; i++)
@@ -1572,6 +1635,8 @@ public static unsafe partial class Raylib
             float norm = (float)val / (float)maxi;
             output[i] = Raymath.Lerp(min, max, norm);
         }
+
+        UnloadRandomSequence(sequence);
         return output;
     }
 
@@ -1585,8 +1650,380 @@ public static unsafe partial class Raylib
         SaveFileText(fileBuffer.AsPointer(), textBuffer.AsPointer());
     }
 
+    /// <summary>Rename file (if exists)</summary>
+    public static int FileRename(string filename, string fileRename)
+    {
+        using AnsiBuffer fileBuffer = filename.ToAnsiBuffer();
+        using AnsiBuffer textBuffer = fileRename.ToAnsiBuffer();
+        return FileRename(fileBuffer.AsPointer(), textBuffer.AsPointer());
+    }
+
+    /// <summary>Remove file (if exists)</summary>
+    public static int FileRemove(string filename)
+    {
+        using AnsiBuffer fileBuffer = filename.ToAnsiBuffer();
+        return FileRemove(fileBuffer.AsPointer());
+    }
+
+    /// <summary>Copy file from one path to another, dstPath created if it doesn't exist</summary>
+    public static int FileCopy(string srcPath, string dstPath)
+    {
+        using AnsiBuffer srcBuffer = srcPath.ToAnsiBuffer();
+        using AnsiBuffer dstBuffer = dstPath.ToAnsiBuffer();
+        return FileCopy(srcBuffer.AsPointer(), dstBuffer.AsPointer());
+    }
+
+    /// <summary>Move file from one path to another, dstPath created if it doesn't exist</summary>
+    public static int FileMove(string srcPath, string dstPath)
+    {
+        using AnsiBuffer srcBuffer = srcPath.ToAnsiBuffer();
+        using AnsiBuffer dstBuffer = dstPath.ToAnsiBuffer();
+        return FileMove(srcBuffer.AsPointer(), dstBuffer.AsPointer());
+    }
+
+    /// <summary>Replace text in an existing file</summary>
+    public static int FileTextReplace(string fileName, string search, string replacement)
+    {
+        using AnsiBuffer fileBuffer = fileName.ToAnsiBuffer();
+        using AnsiBuffer searchBuffer = search.ToAnsiBuffer();
+        using AnsiBuffer replaceBuffer = replacement.ToAnsiBuffer();
+        return FileTextReplace(fileBuffer.AsPointer(), searchBuffer.AsPointer(), replaceBuffer.AsPointer());
+    }
+
+    /// <summary>Find text in existing file</summary>
+    public static int FileTextFindIndex(string fileName, string search)
+    {
+        using AnsiBuffer fileBuffer = fileName.ToAnsiBuffer();
+        using AnsiBuffer searchBuffer = search.ToAnsiBuffer();
+        return FileTextFindIndex(fileBuffer.AsPointer(), searchBuffer.AsPointer());
+    }
+
+    /// <summary>Check if file exists</summary>
+    public static CBool FileExists(string fileName)
+    {
+        using AnsiBuffer fileBuffer = fileName.ToAnsiBuffer();
+        return FileExists(fileBuffer.AsPointer());
+    }
+
+    /// <summary>Check if a directory path exists</summary>
+    public static CBool DirectoryExists(string dirPath)
+    {
+        using AnsiBuffer dirBuffer = dirPath.ToAnsiBuffer();
+        return DirectoryExists(dirBuffer.AsPointer());
+    }
+
+    /// <summary>Get file length in bytes</summary>
+    public static int GetFileLength(string fileName)
+    {
+        using AnsiBuffer fileBuffer = fileName.ToAnsiBuffer();
+        return GetFileLength(fileBuffer.AsPointer());
+    }
+
+    /// <summary>Get string to extension for a filename string (includes dot: '.png')</summary>
+    public static string GetFileExtension(string fileName)
+    {
+        using AnsiBuffer fileBuffer = fileName.ToAnsiBuffer();
+        return Utf8StringUtils.GetUTF8String(GetFileExtension(fileBuffer.AsPointer()));
+    }
+
+    /// <summary>Get string to filename for a path string</summary>
+    public static string GetFileName(string fileName)
+    {
+        using AnsiBuffer fileBuffer = fileName.ToAnsiBuffer();
+        return Utf8StringUtils.GetUTF8String(GetFileName(fileBuffer.AsPointer()));
+    }
+
+    /// <summary>Get filename string without extension </summary>
+    public static string GetFileNameWithoutExt(string fileName)
+    {
+        using AnsiBuffer fileBuffer = fileName.ToAnsiBuffer();
+        return Utf8StringUtils.GetUTF8String(GetFileNameWithoutExt(fileBuffer.AsPointer()));
+    }
+
+    /// <summary>Get full path for a given fileName with path</summary>
+    public static string GetDirectoryPath(string filePath)
+    {
+        using AnsiBuffer fileBuffer = filePath.ToAnsiBuffer();
+        return Utf8StringUtils.GetUTF8String(GetDirectoryPath(fileBuffer.AsPointer()));
+    }
+
+    /// <summary>Get previous directory path for a given path</summary>
+    public static string GetPrevDirectoryPath(string dirPath)
+    {
+        using AnsiBuffer dirBuffer = dirPath.ToAnsiBuffer();
+        return Utf8StringUtils.GetUTF8String(GetPrevDirectoryPath(dirBuffer.AsPointer()));
+    }
+
+    /// <summary>Get current working directory</summary>
+    public static string GetWorkingDirectoryAsString()
+    {
+        return Utf8StringUtils.GetUTF8String(GetWorkingDirectory());
+    }
+
+    /// <summary>Get the directory of the running application</summary>
+    public static string GetApplicationDirectoryAsString()
+    {
+        return Utf8StringUtils.GetUTF8String(GetApplicationDirectory());
+    }
+
+    /// <summary>Change working directory, return true on success</summary>
+    public static CBool ChangeDirectory(string dirPath)
+    {
+        using AnsiBuffer dirBuffer = dirPath.ToAnsiBuffer();
+        return ChangeDirectory(dirBuffer.AsPointer());
+    }
+
+    /// <summary>Check if a given path is a file or a directory</summary>
+    public static CBool IsPathFile(string path)
+    {
+        using AnsiBuffer pathBuffer = path.ToAnsiBuffer();
+        return IsPathFile(pathBuffer.AsPointer());
+    }
+
+    /// <summary>Load directory filepaths</summary>
+    public static FilePathList LoadDirectoryFiles(string dirPath)
+    {
+        using AnsiBuffer dirBuffer = dirPath.ToAnsiBuffer();
+        return LoadDirectoryFiles(dirBuffer.AsPointer());
+    }
+
+    /// <summary>Get the file count in a directory</summary>
+    public static int GetDirectoryFileCount(string dirPath)
+    {
+        using AnsiBuffer dirBuffer = dirPath.ToAnsiBuffer();
+        return GetDirectoryFileCount(dirBuffer.AsPointer());
+    }
+
     /// <summary>
-    /// Loads text from a file, reads it, saves it, unloads the file, and returns the loaded text.
+    /// Get the file count in a directory with extension filtering and recursive directory scan.
+    /// Use 'DIR' in the filter string to include directories in the result
+    /// </summary>
+    public static int GetDirectoryFileCountEx(string dirPath, string filter, CBool scanSubdirs)
+    {
+        using AnsiBuffer dirBuffer = dirPath.ToAnsiBuffer();
+        using AnsiBuffer filterBuffer = filter.ToAnsiBuffer();
+        return GetDirectoryFileCountEx(dirBuffer.AsPointer(), filterBuffer.AsPointer(), scanSubdirs);
+    }
+
+    /// <summary>
+    /// Load directory filepaths with extension filtering and subdir scan; some
+    /// filters available: "*.*", "FILES*", "DIRS*"
+    /// </summary>
+    public static FilePathList LoadDirectoryFilesEx(string basePath, string filter, CBool scanSubDirs)
+    {
+        using AnsiBuffer baseBuffer = basePath.ToAnsiBuffer();
+        using AnsiBuffer filterBuffer = filter.ToAnsiBuffer();
+        return LoadDirectoryFilesEx(baseBuffer.AsPointer(), filterBuffer.AsPointer(), scanSubDirs);
+    }
+
+    /// <summary>Compress data (DEFLATE algorithm)</summary>
+    public static byte[] CompressData(byte[] data)
+    {
+        fixed (byte* dataPtr = data)
+        {
+            int compressedSize;
+            var compressedPtr = CompressData(dataPtr, data.Length, &compressedSize);
+
+            if (compressedPtr == null || compressedSize <= 0)
+            {
+                return Array.Empty<byte>();
+            }
+
+            try
+            {
+                var result = new byte[compressedSize];
+
+                fixed (byte* resultPtr = result)
+                {
+                    Buffer.MemoryCopy(
+                        compressedPtr,
+                        resultPtr,
+                        compressedSize,
+                        compressedSize
+                    );
+                }
+
+                return result;
+            }
+            finally
+            {
+                MemFree(compressedPtr);
+            }
+        }
+    }
+
+    /// <summary>Decompress data (DEFLATE algorithm)</summary>
+    public static byte[] DecompressData(byte[] data)
+    {
+        fixed (byte* dataPtr = data)
+        {
+            int dataSize;
+            var compressedPtr = DecompressData(dataPtr, data.Length, &dataSize);
+
+            if (compressedPtr == null || dataSize <= 0)
+            {
+                return Array.Empty<byte>();
+            }
+
+            try
+            {
+                var result = new byte[dataSize];
+
+                fixed (byte* resultPtr = result)
+                {
+                    Buffer.MemoryCopy(
+                        compressedPtr,
+                        resultPtr,
+                        dataSize,
+                        dataSize
+                    );
+                }
+
+                return result;
+            }
+            finally
+            {
+                MemFree(compressedPtr);
+            }
+        }
+    }
+
+    /// <summary>Encode data to Base64 string</summary>
+    public static byte[] EncodeDataBase64(byte[] data)
+    {
+        fixed (byte* dataPtr = data)
+        {
+            int outputSize;
+            var compressedPtr = EncodeDataBase64(dataPtr, data.Length, &outputSize);
+
+            if (compressedPtr == null || outputSize <= 0)
+            {
+                return Array.Empty<byte>();
+            }
+
+            try
+            {
+                var result = new byte[outputSize];
+
+                fixed (byte* resultPtr = result)
+                {
+                    Buffer.MemoryCopy(
+                        compressedPtr,
+                        resultPtr,
+                        outputSize,
+                        outputSize
+                    );
+                }
+
+                return result;
+            }
+            finally
+            {
+                MemFree(compressedPtr);
+            }
+        }
+    }
+
+    /// <summary>Decode data to Base64 string</summary>
+    public static byte[] DecodeDataBase64(string data)
+    {
+        using Utf8Buffer ptr = data.ToUtf8Buffer();
+
+        int outputSize;
+        var compressedPtr = DecodeDataBase64(ptr.AsPointer(), &outputSize);
+
+        if (compressedPtr == null || outputSize <= 0)
+        {
+            return Array.Empty<byte>();
+        }
+
+        try
+        {
+            var result = new byte[outputSize];
+
+            fixed (byte* resultPtr = result)
+            {
+                Buffer.MemoryCopy(
+                    compressedPtr,
+                    resultPtr,
+                    outputSize,
+                    outputSize
+                );
+            }
+
+            return result;
+        }
+        finally
+        {
+            MemFree(compressedPtr);
+        }
+    }
+
+    /// <summary>Compute CRC32 hash code</summary>
+    public static uint ComputeCRC32(byte[] data)
+    {
+        fixed (byte* dataPtr = data)
+        {
+            return ComputeCRC32(dataPtr, data.Length);
+        }
+    }
+
+    /// <summary>Compute MD5 hash code, returns uint[4] array</summary>
+    public static uint[] ComputeMD5(byte[] data)
+    {
+        fixed (byte* dataPtr = data)
+        {
+            var result = ComputeMD5(dataPtr, data.Length);
+            return
+            [
+                result[0],
+                result[1],
+                result[2],
+                result[3],
+            ];
+        }
+    }
+
+    /// <summary>Compute SHA1 hash code, returns uint[5] array</summary>
+    public static uint[] ComputeSHA1(byte[] data)
+    {
+        fixed (byte* dataPtr = data)
+        {
+            var result = ComputeSHA1(dataPtr, data.Length);
+            return
+            [
+                result[0],
+                result[1],
+                result[2],
+                result[3],
+                result[4],
+            ];
+        }
+    }
+
+    /// <summary>Compute SHA256 hash code, returns int[8] (32 bytes)</summary>
+    public static uint[] ComputeSHA256(byte[] data)
+    {
+        fixed (byte* dataPtr = data)
+        {
+            var result = ComputeSHA256(dataPtr, data.Length);
+            return
+            [
+                result[0],
+                result[1],
+                result[2],
+                result[3],
+                result[4],
+                result[5],
+                result[6],
+                result[7],
+            ];
+        }
+    }
+
+    /// <summary>
+    /// Loads text from a file, reads it, saves it, unloads the file, and
+    /// returns the loaded text.
     /// </summary>
     /// <returns>The text content of the file on the given path</returns>
     public static string LoadFileText(string fileName)
@@ -1598,6 +2035,9 @@ public static unsafe partial class Raylib
         return text;
     }
 
+    /// <summary>
+    /// Get the screen center position
+    /// </summary>
     public static Vector2 GetScreenCenter()
     {
         Vector2 center = new Vector2();

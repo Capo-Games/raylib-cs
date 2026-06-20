@@ -1,6 +1,17 @@
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace Raylib_cs.Tests;
+
+using System.Collections.Generic;
+
+public static class BlittableHelper
+{
+    public static bool IsBlittable<T>()
+    {
+        return !RuntimeHelpers.IsReferenceOrContainsReferences<T>();
+    }
+}
 
 public class RaylibTests
 {
@@ -29,6 +40,7 @@ public class RaylibTests
         CheckType<Transform>();
         CheckType<BoneInfo>();
         CheckType<Model>();
+        CheckType<ModelSkeleton>();
         CheckType<ModelAnimation>();
         CheckType<Ray>();
         CheckType<RayCollision>();

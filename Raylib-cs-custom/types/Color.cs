@@ -7,7 +7,7 @@ namespace Raylib_cs;
 /// Color type, RGBA (32bit)
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-public struct Color
+public record struct Color
 {
     public byte R;
     public byte G;
@@ -210,9 +210,9 @@ public struct Color
     public static Color Lerp(Color origin, Color target, float t)
     {
         byte r = LerpB(origin.R, target.R, t);
-        byte g = LerpB(origin.R, target.G, t);
-        byte b = LerpB(origin.R, target.B, t);
-        byte a = LerpB(origin.R, target.A, t);
+        byte g = LerpB(origin.G, target.G, t);
+        byte b = LerpB(origin.B, target.B, t);
+        byte a = LerpB(origin.A, target.A, t);
         return new Color(r, g, b, a);
     }
 
@@ -220,10 +220,5 @@ public struct Color
     private static byte LerpB(byte a, byte b, float t)
     {
         return (byte)(a + (b - a) * t);
-    }
-
-    public readonly override string ToString()
-    {
-        return $"{{R:{R} G:{G} B:{B} A:{A}}}";
     }
 }

@@ -152,9 +152,15 @@
     </ItemGroup>
 
     <Target Name="ConfigureNative" Condition="$(SkipLocalBuild) != true">
-        <DownloadFile SourceUrl="https://x-access-token:$(RAYLIB_TOKEN_SECRET)@github.com/Capo-Games/raylib-gpu/archive/refs/tags/$(TargetRaylibTag).zip" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="raylib.zip" Condition="!Exists('$(BaseIntermediateOutputPath)raylib.zip')" />
+        <!-- Fetch raylib source from the private Capo-Games/raylib-gpu repo via authenticated git clone.
+             DownloadFile cannot auth private archives (HttpClient ignores URL userinfo), so we clone instead. -->
+        <PropertyGroup>
+            <RaylibRepoUrl Condition="'$(RAYLIB_TOKEN_SECRET)' != ''">https://x-access-token:$(RAYLIB_TOKEN_SECRET)@github.com/Capo-Games/raylib-gpu.git</RaylibRepoUrl>
+            <RaylibRepoUrl Condition="'$(RAYLIB_TOKEN_SECRET)' == ''">https://github.com/Capo-Games/raylib-gpu.git</RaylibRepoUrl>
+        </PropertyGroup>
 
-        <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip" DestinationFolder="$(BaseIntermediateOutputPath)" OverwriteReadOnlyFiles="true" Condition="!Exists('$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)')" />
+        <Exec Command="git clone --depth 1 --branch $(TargetRaylibTag) $(RaylibRepoUrl) &quot;$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)&quot;"
+              Condition="!Exists('$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)')" />
 
         <Copy SourceFiles="$(MSBuildProjectDirectory)/android_main.c" DestinationFolder="$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)/src" Condition="'$(BuildPlatform)' == 'Android'" />
 

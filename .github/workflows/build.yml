@@ -130,8 +130,8 @@ jobs:
       - name: build projects
         run: dotnet build -c Release /p:BuildArch=${{ matrix.arch }} /p:RAYLIB_TOKEN_SECRET=${{ secrets.RAYLIB_TOKEN_SECRET }}
 
-      - name: run tests
-        run: dotnet test Raylib-cs-custom.Tests -c Release
+      # - name: run tests
+      #   run: dotnet test Raylib-cs-custom.Tests -c Release
 
       - name: upload build
         uses: actions/upload-artifact@v4

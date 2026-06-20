@@ -100,7 +100,7 @@
                  Condition="Exists('$(OutputPath)native/raylib/$(NativePre)raylib.$(NativeExt)')" />
 
         <CMakeArgs Include="-B $(OutputPath)native" />
-        <CMakeArgs Include="-S $(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)" />
+        <CMakeArgs Include="-S $(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)" />
         <CMakeArgs Include="-D CMAKE_BUILD_TYPE=$(Configuration)" />
         <CMakeArgs Include="-D BUILD_SHARED_LIBS=ON" />
         <CMakeArgs Include="-D BUILD_EXAMPLES=OFF" />
@@ -112,18 +112,18 @@
     </ItemGroup>
 
     <Target Name="ConfigureNative" Condition="$(SkipLocalBuild) != true">
-        <DownloadFile SourceUrl="https://github.com/xxCherry/raylib-rhyt/archive/refs/tags/$(TargetRaylibTag).zip" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="raylib.zip" Condition="!Exists('$(BaseIntermediateOutputPath)raylib.zip')" />
+        <DownloadFile SourceUrl="https://$(RAYLIB_TOKEN_SECRET)@github.com/Capo-Games/raylib-gpu/archive/refs/tags/$(TargetRaylibTag).zip" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="raylib.zip" Condition="!Exists('$(BaseIntermediateOutputPath)raylib.zip')" />
 
-        <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip" DestinationFolder="$(BaseIntermediateOutputPath)" OverwriteReadOnlyFiles="true" Condition="!Exists('$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)')" />
+        <Unzip SourceFiles="$(BaseIntermediateOutputPath)raylib.zip" DestinationFolder="$(BaseIntermediateOutputPath)" OverwriteReadOnlyFiles="true" Condition="!Exists('$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)')" />
 
-        <Copy SourceFiles="$(MSBuildProjectDirectory)/android_main.c" DestinationFolder="$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)/src" Condition="'$(BuildPlatform)' == 'Android'" />
+        <Copy SourceFiles="$(MSBuildProjectDirectory)/android_main.c" DestinationFolder="$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)/src" Condition="'$(BuildPlatform)' == 'Android'" />
 
         <DownloadFile SourceUrl="https://github.com/kivy/angle-builder/releases/download/$(AngleTag)/angle-macos-$(AngleArch).tar.gz" DestinationFolder="$(BaseIntermediateOutputPath)" DestinationFileName="angle.tar.gz" Condition="$([MSBuild]::IsOSPlatform('OSX')) And !Exists('$(BaseIntermediateOutputPath)angle.tar.gz')" />
 
         <Exec Command="tar -xvzf $(BaseIntermediateOutputPath)angle.tar.gz -C $(BaseIntermediateOutputPath)" Condition="$([MSBuild]::IsOSPlatform('OSX'))" />
 
         <PropertyGroup Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))">
-            <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-rhyt-$(TargetRaylibTag)\src\CMakeLists.txt</RaylibCMakeListsFile>
+            <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)\src\CMakeLists.txt</RaylibCMakeListsFile>
         </PropertyGroup>
 
         <ReadLinesFromFile Condition="'$(BuildPlatform)' == 'Android' Or $([MSBuild]::IsOSPlatform('OSX'))" File="$(RaylibCMakeListsFile)">

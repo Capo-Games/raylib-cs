@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -39,7 +39,7 @@
   <Import Project="./Build.props" />
 
   <ItemGroup>
-    <Content Include="runtimes/**" Link="runtimes/%(RecursiveDir)/%(Filename)%(Extension)">
+    <Content Include="runtimes/**" Exclude="runtimes/**/.keep" Link="runtimes/%(RecursiveDir)/%(Filename)%(Extension)">
       <PackagePath>runtimes/</PackagePath>
       <Pack>true</Pack>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

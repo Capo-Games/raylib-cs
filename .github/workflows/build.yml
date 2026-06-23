@@ -11,6 +11,7 @@ on:
 
 env:
   ANDROID_NDK_VERSION: r29
+
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -28,94 +29,19 @@ jobs:
           echo "version=$(sed -n 's/.*<TargetRaylibTag>\(.*\)<\/TargetRaylibTag>.*/\1/p' Raylib-cs-custom/Build.props)">> ${GITHUB_OUTPUT}
           echo "pkgversion=$(sed -n 's/.*<PackageVersion>\(.*\)<\/PackageVersion>.*/\1/p' Raylib-cs-custom/Build.props)">> ${GITHUB_OUTPUT}
 
-  # build-linux:
-  #   runs-on: ubuntu-22.04
-  #   needs: build
-  #   steps:
-  #     - name: checkout repository
-  #       uses: actions/checkout@v4
-
-  #     - name: setup dotnet
-  #       uses: actions/setup-dotnet@v4
-  #       with:
-  #         dotnet-version: |
-  #           6.0.x
-  #           8.0.x
-
-  #     - name: setup dependencies
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install -y \
-  #           libasound2-dev \
-  #           libwayland-dev \
-  #           libxkbcommon-dev \
-  #           xorg-dev \
-  #           libgl1-mesa-dev \
-  #           libglu1-mesa-dev \
-  #           libxcursor-dev
-
-  #     - name: build projects
-  #       run: dotnet build -c Release
-
-  #     - name: run tests
-  #       run: dotnet test Raylib-cs-custom.Tests -c Release
-
-  #     - name: upload build
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: linux-x64
-  #         path: Raylib-cs-custom.Native/bin/Release/native/raylib/libraylib.so
-  #         if-no-files-found: error
-
-  # build-osx:
-  #   runs-on: macos-latest
-  #   needs: build
-  #   strategy:
-  #     matrix:
-  #       name: [arm64, x64]
-  #       include:
-  #         - name: arm64
-  #           arch: arm64
-  #         - name: x64
-  #           arch: x86_64
-  #   steps:
-  #     - name: checkout repository
-  #       uses: actions/checkout@v4
-
-  #     - name: setup dotnet
-  #       uses: actions/setup-dotnet@v4
-  #       with:
-  #         dotnet-version: |
-  #           6.0.x
-  #           8.0.x
-
-  #     - name: build projects
-  #       run: dotnet build -c Release /p:BuildArch=${{ matrix.arch }}
-
-  #     - name: run tests
-  #       run: dotnet test Raylib-cs-custom.Tests -c Release
-
-  #     - name: upload build
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: osx-${{ matrix.name }}
-  #         path: |
-  #           Raylib-cs-custom.Native/bin/Release/native/raylib/libraylib.dylib 
-  #           Raylib-cs-custom.Native/bin/Release/native/raylib/libEGL.dylib 
-  #           Raylib-cs-custom.Native/bin/Release/native/raylib/libGLESv2.dylib
-  #         if-no-files-found: error
-
-  build-windows:
-    runs-on: windows-latest
+  build-linux:
     needs: build
     strategy:
+      fail-fast: false
       matrix:
-        name: [x86, x64]
         include:
-          - name: x86
-            arch: win32
           - name: x64
             arch: x64
+            os: ubuntu-22.04
+          # - name: arm64
+          #   arch: arm64
+          #   os: ubuntu-24.04-arm
+    runs-on: ${{ matrix.os }}
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
@@ -124,14 +50,107 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            6.0.x
             8.0.x
+            10.0.x
 
-      - name: build projects
-        run: dotnet build -c Release /p:BuildArch=${{ matrix.arch }} /p:RAYLIB_TOKEN_SECRET=${{ secrets.RAYLIB_TOKEN_SECRET }}
+      - name: setup dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            pkg-config \
+            libasound2-dev \
+            libpulse-dev \
+            libdbus-1-dev \
+            libudev-dev \
+            libwayland-dev \
+            wayland-protocols \
+            libxkbcommon-dev \
+            xorg-dev \
+            libgl1-mesa-dev \
+            libegl1-mesa-dev \
+            libxcursor-dev \
+            libxfixes-dev \
+            libxi-dev \
+            libxss-dev \
+            libxtst-dev
 
-      # - name: run tests
-      #   run: dotnet test Raylib-cs-custom.Tests -c Release
+      - name: build raylib native library
+        run: dotnet build Raylib-cs-custom.Native/Raylib-cs-custom.Native.csproj -c Release /p:BuildArch=${{ matrix.arch }} /p:RAYLIB_TOKEN_SECRET=${{ secrets.RAYLIB_TOKEN_SECRET }}
+
+      - name: upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.name }}
+          path: |
+            Raylib-cs-custom.Native/bin/Release/native/raylib/libraylib.so
+            Raylib-cs-custom.Native/bin/Release/native/raylib/libSDL3.so*
+            Raylib-cs-custom.Native/bin/Release/native/raylib/libwgpu_native.so
+          if-no-files-found: error
+
+  build-osx:
+    runs-on: macos-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: arm64
+            arch: arm64
+          - name: x64
+            arch: x86_64
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: build raylib native library
+        run: dotnet build Raylib-cs-custom.Native/Raylib-cs-custom.Native.csproj -c Release /p:BuildArch=${{ matrix.arch }} /p:RAYLIB_TOKEN_SECRET=${{ secrets.RAYLIB_TOKEN_SECRET }}
+
+      - name: upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: osx-${{ matrix.name }}
+          path: |
+            Raylib-cs-custom.Native/bin/Release/native/raylib/libraylib.dylib
+            Raylib-cs-custom.Native/bin/Release/native/raylib/libSDL3*.dylib
+            Raylib-cs-custom.Native/bin/Release/native/raylib/libwgpu_native.dylib
+          if-no-files-found: error
+
+  build-windows:
+    runs-on: windows-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: x86
+            arch: win32
+          - name: x64
+            arch: x64
+          # - name: arm64
+          #   arch: arm64
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: build raylib native library
+        run: dotnet build Raylib-cs-custom.Native/Raylib-cs-custom.Native.csproj -c Release /p:BuildArch=${{ matrix.arch }} /p:RAYLIB_TOKEN_SECRET=${{ secrets.RAYLIB_TOKEN_SECRET }}
 
       - name: upload build
         uses: actions/upload-artifact@v4
@@ -143,112 +162,123 @@ jobs:
             Raylib-cs-custom.Native/bin/Release/native/raylib/Release/wgpu_native.dll
           if-no-files-found: error
 
-  # build-android:
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   strategy:
-  #     matrix:
-  #       name: [arm, arm64, x86, x64]
-  #       include:
-  #         - name: arm
-  #           arch: arm
-  #         - name: arm64
-  #           arch: arm64
-  #         - name: x86
-  #           arch: x86
-  #         - name: x64
-  #           arch: x64
-  #   steps:
-  #     - name: checkout repository
-  #       uses: actions/checkout@v4
-
-  #     - name: setup dotnet
-  #       uses: actions/setup-dotnet@v4
-  #       with:
-  #         dotnet-version: |
-  #           6.0.x
-  #           8.0.x
-
-  #     - name: setup Android NDK
-  #       id: setup-ndk
-  #       uses: nttld/setup-ndk@v1
-  #       with:
-  #         ndk-version: ${{ env.ANDROID_NDK_VERSION }}
-  #         link-to-sdk: true
-
-  #     - name: build raylib for android
-  #       run: dotnet build Raylib-cs-custom.Native -c Release /p:BuildPlatform=Android /p:BuildArch=${{ matrix.arch }}
-  #       env:
-  #         ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-
-  #     - name: upload build
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: android-${{ matrix.name }}
-  #         path: Raylib-cs-custom.Native/bin/Release/native/raylib/libraylib.so
-  #         if-no-files-found: error
-
-  build-publish:
-    runs-on: ubuntu-22.04
-    needs:
-      # - build-linux
-      # - build-osx
-      - build-windows
+  build-android:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: arm
+            arch: arm
+          - name: arm64
+            arch: arm64
+          - name: x86
+            arch: x86
+          - name: x64
+            arch: x64
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
-
-      # - uses: actions/download-artifact@v4.1.7
-      #   with:
-      #     name: linux-x64
-      #     path: Raylib-cs-custom/runtimes/linux-x64/native
-
-      # - uses: actions/download-artifact@v4.1.7
-      #   with:
-      #     name: osx-arm64
-      #     path: Raylib-cs-custom/runtimes/osx-arm64/native
-
-      # - uses: actions/download-artifact@v4.1.7
-      #   with:
-      #     name: osx-x64
-      #     path: Raylib-cs-custom/runtimes/osx-x64/native
-
-      # - uses: actions/download-artifact@v4.1.7
-      #   with:
-      #     name: win-x86
-      #     path: Raylib-cs-custom/runtimes/win-x86/native
-
-      - uses: actions/download-artifact@v4.1.7
-        with:
-          name: win-x64
-          path: Raylib-cs-custom/runtimes/win-x64/native
-          
-      # - uses: actions/download-artifact@v4
-      #   with:
-      #     name: android-arm
-      #     path: Raylib-cs-custom/runtimes/android-arm/native
-
-      # - uses: actions/download-artifact@v4
-      #   with:
-      #     name: android-arm64
-      #     path: Raylib-cs-custom/runtimes/android-arm64/native
-
-      # - uses: actions/download-artifact@v4
-      #   with:
-      #     name: android-x86
-      #     path: Raylib-cs-custom/runtimes/android-x86/native
-
-      # - uses: actions/download-artifact@v4
-      #   with:
-      #     name: android-x64
-      #     path: Raylib-cs-custom/runtimes/android-x64/native
 
       - name: setup dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            6.0.x
             8.0.x
+            10.0.x
+
+      - name: setup Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: ${{ env.ANDROID_NDK_VERSION }}
+          link-to-sdk: true
+
+      - name: build raylib for android
+        run: dotnet build Raylib-cs-custom.Native/Raylib-cs-custom.Native.csproj -c Release /p:BuildPlatform=Android /p:BuildArch=${{ matrix.arch }} /p:RAYLIB_TOKEN_SECRET=${{ secrets.RAYLIB_TOKEN_SECRET }}
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+      - name: upload build
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ matrix.name }}
+          path: Raylib-cs-custom.Native/bin/Release/native/raylib/libraylib.so
+          if-no-files-found: error
+
+  build-publish:
+    runs-on: ubuntu-22.04
+    needs:
+      - build-linux
+      - build-osx
+      - build-windows
+      - build-android
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: linux-x64
+          path: Raylib-cs-custom/runtimes/linux-x64/native
+
+      # - uses: actions/download-artifact@v4.1.7
+      #   with:
+      #     name: linux-arm64
+      #     path: Raylib-cs-custom/runtimes/linux-arm64/native
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: osx-arm64
+          path: Raylib-cs-custom/runtimes/osx-arm64/native
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: osx-x64
+          path: Raylib-cs-custom/runtimes/osx-x64/native
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: win-x86
+          path: Raylib-cs-custom/runtimes/win-x86/native
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: win-x64
+          path: Raylib-cs-custom/runtimes/win-x64/native
+
+      # - uses: actions/download-artifact@v4.1.7
+      #   with:
+      #     name: win-arm64
+      #     path: Raylib-cs-custom/runtimes/win-arm64/native
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: android-arm
+          path: Raylib-cs-custom/runtimes/android-arm/native
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: android-arm64
+          path: Raylib-cs-custom/runtimes/android-arm64/native
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: android-x86
+          path: Raylib-cs-custom/runtimes/android-x86/native
+
+      - uses: actions/download-artifact@v4.1.7
+        with:
+          name: android-x64
+          path: Raylib-cs-custom/runtimes/android-x64/native
+
+      - name: setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: create NuGet Package
         run: dotnet pack Raylib-cs-custom -c Release --output nuget

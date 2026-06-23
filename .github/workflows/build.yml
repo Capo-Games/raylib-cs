@@ -168,15 +168,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: arm
-            arch: arm
-          - name: arm64
-            arch: arm64
-          - name: x86
-            arch: x86
-          - name: x64
-            arch: x64
+        arch:
+          - arm
+          - arm64
+          - x86
+          - x64
     steps:
       - name: checkout repository
         uses: actions/checkout@v4
@@ -203,7 +199,7 @@ jobs:
       - name: upload build
         uses: actions/upload-artifact@v4
         with:
-          name: android-${{ matrix.name }}
+          name: android-${{ matrix.arch }}
           path: Raylib-cs-custom.Native/bin/Release/native/raylib/libraylib.so
           if-no-files-found: error
 

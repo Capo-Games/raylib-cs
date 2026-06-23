@@ -15,6 +15,7 @@
         <WgpuNativeTag Condition="'$(WgpuNativeTag)' == ''">v$(WgpuNativeVersion)</WgpuNativeTag>
         <WgpuNativeReleaseBaseUrl>https://github.com/gfx-rs/wgpu-native/releases/download/$(WgpuNativeTag)</WgpuNativeReleaseBaseUrl>
         <Sdl3Version Condition="'$(Sdl3Version)' == ''">3.2.22</Sdl3Version>
+        <RaylibSourceDir>$(MSBuildProjectDirectory)/$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)</RaylibSourceDir>
         <NativeRuntimeDir>$(MSBuildProjectDirectory)/bin/$(Configuration)/native/raylib/</NativeRuntimeDir>
         <NativeFilePrefix>lib</NativeFilePrefix>
     </PropertyGroup>
@@ -184,7 +185,7 @@
                  Condition="'$(UsesDesktopWgpu)' == 'true'" />
 
         <CMakeArgs Include="-B $(NativeBuildDir)" />
-        <CMakeArgs Include="-S $(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)" />
+        <CMakeArgs Include="-S $(RaylibSourceDir)" />
         <CMakeArgs Include="-D CMAKE_BUILD_TYPE=$(Configuration)" />
         <CMakeArgs Include="-D BUILD_SHARED_LIBS=ON" />
         <CMakeArgs Include="-D BUILD_EXAMPLES=OFF" />
@@ -203,10 +204,12 @@
             <RaylibRepoUrl Condition="'$(RAYLIB_TOKEN_SECRET)' == ''">https://github.com/Capo-Games/raylib-gpu.git</RaylibRepoUrl>
         </PropertyGroup>
 
-        <Exec Command="git clone --depth 1 --branch $(TargetRaylibTag) $(RaylibRepoUrl) &quot;$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)&quot;"
-              Condition="!Exists('$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)')" />
+        <RemoveDir Directories="$(RaylibSourceDir)" Condition="Exists('$(RaylibSourceDir)') And !Exists('$(RaylibSourceDir)/CMakeLists.txt')" />
+        <Exec Command="git clone --depth 1 --branch $(TargetRaylibTag) $(RaylibRepoUrl) &quot;$(RaylibSourceDir)&quot;"
+              Condition="!Exists('$(RaylibSourceDir)/CMakeLists.txt')" />
+        <Error Text="raylib source directory was not cloned: $(RaylibSourceDir)" Condition="!Exists('$(RaylibSourceDir)/CMakeLists.txt')" />
 
-        <Copy SourceFiles="$(MSBuildProjectDirectory)/android_main.c" DestinationFolder="$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)/src" Condition="'$(BuildPlatform)' == 'Android'" />
+        <Copy SourceFiles="$(MSBuildProjectDirectory)/android_main.c" DestinationFolder="$(RaylibSourceDir)/src" Condition="'$(BuildPlatform)' == 'Android'" />
 
         <DownloadFile SourceUrl="$(WgpuNativeReleaseBaseUrl)/$(WgpuArchiveName)"
                       DestinationFolder="$(BaseIntermediateOutputPath)"
@@ -259,7 +262,7 @@
         </ItemGroup>
 
         <PropertyGroup Condition="'$(BuildPlatform)' == 'Android'">
-            <RaylibCMakeListsFile>$(BaseIntermediateOutputPath)raylib-gpu-$(TargetRaylibTag)\src\CMakeLists.txt</RaylibCMakeListsFile>
+            <RaylibCMakeListsFile>$(RaylibSourceDir)/src/CMakeLists.txt</RaylibCMakeListsFile>
         </PropertyGroup>
 
         <ReadLinesFromFile Condition="'$(BuildPlatform)' == 'Android'" File="$(RaylibCMakeListsFile)">

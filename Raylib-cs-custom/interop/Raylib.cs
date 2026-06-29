@@ -24,6 +24,8 @@ public static unsafe partial class Raylib
     public const float DEG2RAD = MathF.PI / 180.0f;
     public const float RAD2DEG = 180.0f / MathF.PI;
 
+    private static Func<string, string>? GetLibraryName { get; set; }
+
     static Raylib()
     {
         NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), ResolveDllImport);
@@ -32,6 +34,12 @@ public static unsafe partial class Raylib
     public static IntPtr ResolveDllImport(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
         IntPtr handle = IntPtr.Zero;
+
+        if (GetLibraryName != null)
+        {
+            libraryName = GetLibraryName(libraryName);
+        }
+
         string libraryPath = GetLibraryPath(libraryName);
 
         if (NativeLibrary.TryLoad(libraryName, assembly, searchPath, out handle))

@@ -24,7 +24,7 @@ public static unsafe partial class Raylib
     public const float DEG2RAD = MathF.PI / 180.0f;
     public const float RAD2DEG = 180.0f / MathF.PI;
 
-    private static Func<string, string>? GetLibraryName { get; set; }
+    public static Func<string, string>? GetLibraryName { get; set; }
 
     static Raylib()
     {

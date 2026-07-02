@@ -777,6 +777,31 @@ public static unsafe partial class Rlgl
         void* data
     );
 
+    /// <summary>Load texture upload stream, returns stream id (0 if unsupported)</summary>
+    [LibraryImport(NativeLibName, EntryPoint = "rlLoadTextureStream")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial uint LoadTextureStream(int width, int height, PixelFormat format, int bufferCount);
+
+    /// <summary>Unload texture stream and its staging buffers</summary>
+    [LibraryImport(NativeLibName, EntryPoint = "rlUnloadTextureStream")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void UnloadTextureStream(uint streamId);
+
+    /// <summary>Acquire a writable staging buffer from a texture stream (NULL when none free)</summary>
+    [LibraryImport(NativeLibName, EntryPoint = "rlAcquireTextureStreamBuffer")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void* AcquireTextureStreamBuffer(uint streamId);
+
+    /// <summary>Return an acquired staging buffer to a texture stream without uploading</summary>
+    [LibraryImport(NativeLibName, EntryPoint = "rlReleaseTextureStreamBuffer")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void ReleaseTextureStreamBuffer(uint streamId, void* buffer);
+
+    /// <summary>Asynchronously upload an acquired staging buffer to a texture</summary>
+    [LibraryImport(NativeLibName, EntryPoint = "rlCommitTextureStreamBuffer")]
+    [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    public static partial void CommitTextureStreamBuffer(uint streamId, uint textureId, void* buffer);
+
     /// <summary>Get OpenGL internal formats</summary>
     [LibraryImport(NativeLibName, EntryPoint = "rlGetGlTextureFormats")]
     [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
